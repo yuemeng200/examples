@@ -1,0 +1,13 @@
+{
+  "name": "examples",
+  "private": true,
+  "scripts": {
+    "create-package": "pnpm --filter @examples/create-package start"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}

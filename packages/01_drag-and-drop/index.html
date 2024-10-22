@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>拖放API示例</title>
+  <style>
+    .container {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 50px;
+    }
+
+    .draggable-list {
+      width: 200px;
+      min-height: 300px;
+      border: 2px solid #ccc;
+      padding: 10px;
+      border-radius: 8px;
+      background-color: #f9f9f9;
+      position: relative;
+    }
+
+    .draggable-item {
+      background-color: #ffffff;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 10px;
+      margin-bottom: 8px;
+      cursor: move;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .draggable-item:hover {
+      background-color: #f0f0f0;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .draggable-item.dragging {
+      opacity: 0.5;
+      transform: scale(1.05);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    .drag-over {
+      border: 2px dashed #007bff;
+      background-color: #e6f2ff;
+    }
+
+    .drag-indicator {
+      background-color: #e0e0e0;
+      border: 2px dashed #007bff;
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+
+    .custom-drag-image {
+      background-color: #ffffff;
+      color: #333;
+      padding: 10px;
+      border-radius: 4px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      font-weight: normal;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      opacity: 0.9;
+      pointer-events: none;
+      border: 1px solid #ddd;
+    }
+  </style>
+</head>
+<body>
+  <h1>拖放API示例</h1>
+  <div class="container">
+    <div id="list1" class="draggable-list">
+      <div id="item1" class="draggable-item" draggable="true">项目 1</div>
+      <div id="item2" class="draggable-item" draggable="true">项目 2</div>
+      <div id="item3" class="draggable-item" draggable="true">项目 3</div>
+    </div>
+    <div id="list2" class="draggable-list">
+      <div id="item4" class="draggable-item" draggable="true">项目 4</div>
+      <div id="item5" class="draggable-item" draggable="true">项目 5</div>
+      <div id="item6" class="draggable-item" draggable="true">项目 6</div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', (event) => {
+      const items = document.querySelectorAll('.draggable-item');
+      const lists = document.querySelectorAll('.draggable-list');
+      let draggedItem = null;
+
+      items.forEach(item => {
+        item.addEventListener('dragstart', dragStart);
+        item.addEventListener('dragend', dragEnd);
+      });
+
+      lists.forEach(list => {
+        list.addEventListener('dragover', dragOver);
+        list.addEventListener('dragenter', dragEnter);
+        list.addEventListener('dragleave', dragLeave);
+        list.addEventListener('drop', drop);
+      });
+
+      /**
+       * 创建自定义拖动影像
+       * @param {DragEvent} e 
+       * @returns {HTMLElement} 自定义拖动影像
+       */
+      function customDragImage(e) {
+        // 创建自定义拖动影像
+        const dragImage = e.target.cloneNode(true);
+        dragImage.classList.add('custom-drag-image');
+        dragImage.style.position = 'absolute';
+        dragImage.style.top = '-1000px';
+        dragImage.style.left = '-1000px';
+        dragImage.style.opacity = '0.8';
+        dragImage.style.pointerEvents = 'none';
+        dragImage.textContent = e.target.textContent + ' (我在移动哈👀)';
+        // 复制原始元素的所有计算样式
+        const computedStyle = window.getComputedStyle(e.target);
+        for (const prop of computedStyle) {
+          dragImage.style[prop] = computedStyle.getPropertyValue(prop);
+        }
+        document.body.appendChild(dragImage);
+        // 设置自定义拖动影像
+        e.dataTransfer.setDragImage(dragImage, 0, 0);
+
+        setTimeout(() => {
+          // 需要在下一个事件循环中移除自定义拖动影像
+          document.body.removeChild(dragImage);
+        }, 0);
+
+        return dragImage;
+      }
+
+      /**
+       * 拖动开始, 设置拖动数据, 创建自定义拖动影像
+       * @param {DragEvent} e 
+       */
+      function dragStart(e) {
+        draggedItem = e.target;
+        e.dataTransfer.setData('text/plain', e.target.id);
+
+        // NOTE 拖动时的默认影像是无法自定义样式的，所以可以开启使用自定义影像
+        customDragImage(e);
+
+        setTimeout(() => {
+          e.target.classList.add('dragging');
+        }, 0);
+      }
+
+      /**
+       * 拖动结束, 移除拖动指示器
+       * @param {DragEvent} e 
+       */
+      function dragEnd(e) {
+        e.target.classList.remove('dragging');
+        draggedItem = null;
+        removeDragIndicator();
+      }
+
+      /**
+       * 拖动经过时, 给需要的位置添加拖动指示器
+       * @param {DragEvent} e 
+       */
+      function dragOver(e) {
+        e.preventDefault();
+        if (!draggedItem) return;
+        const afterElement = getDragAfterElement(e.currentTarget, e.clientY);
+
+        if (afterElement === draggedItem ||
+          afterElement === draggedItem.nextElementSibling ||
+          (!afterElement && draggedItem === e.currentTarget.lastElementChild)) {
+          removeDragIndicator();
+        } else {
+          const dragIndicator = e.currentTarget.querySelector('.drag-indicator') || createDragIndicator(e.currentTarget);
+
+          if (afterElement == null) {
+            e.currentTarget.appendChild(dragIndicator);
+          } else {
+            e.currentTarget.insertBefore(dragIndicator, afterElement);
+          }
+        }
+      }
+
+      function dragEnter(e) {
+        e.preventDefault();
+        if (e.target.classList.contains('draggable-list')) {
+          e.target.classList.add('drag-over');
+        }
+      }
+
+      function dragLeave(e) {
+        if (e.target.classList.contains('draggable-list')) {
+          e.target.classList.remove('drag-over');
+          if (!e.currentTarget.contains(e.relatedTarget)) {
+            removeDragIndicator();
+          }
+        }
+      }
+
+      /**
+       * 拖动放下时, 将拖动元素放置到目标元素中
+       * @param {DragEvent} e 
+       */
+      function drop(e) {
+        e.preventDefault();
+        const id = e.dataTransfer.getData('text/plain');
+        const draggableElement = document.getElementById(id);
+        const dropZone = e.target.closest('.draggable-list');
+
+        if (dropZone && draggableElement) {
+          const afterElement = getDragAfterElement(dropZone, e.clientY);
+          if (afterElement == null) {
+            dropZone.appendChild(draggableElement);
+          } else if (afterElement !== draggableElement && afterElement !== draggableElement.nextElementSibling) {
+            dropZone.insertBefore(draggableElement, afterElement);
+          }
+        }
+
+        lists.forEach(list => list.classList.remove('drag-over'));
+        removeDragIndicator();
+      }
+
+      /**
+       * 获取拖动元素在目标元素中的位置
+       * @param {HTMLElement} container 目标元素
+       * @param {number} y 鼠标在目标元素中的位置
+       * @returns {HTMLElement} 拖动元素
+       */
+      function getDragAfterElement(container, y) {
+        const draggableElements = [...container.querySelectorAll('.draggable-item:not(.dragging)')];
+
+        return draggableElements.reduce((closest, child) => {
+          const box = child.getBoundingClientRect();
+          const offset = y - box.top - box.height / 2;
+          if (offset < 0 && offset > closest.offset) {
+            return { offset: offset, element: child };
+          } else {
+            return closest;
+          }
+        }, { offset: Number.NEGATIVE_INFINITY }).element;
+      }
+
+      /**
+       * 创建拖动指示器
+       * @param {HTMLElement} container 目标元素
+       * @returns {HTMLElement} 拖动指示器
+       */
+      function createDragIndicator(container) {
+        const indicator = document.createElement('div');
+        indicator.classList.add('drag-indicator');
+        indicator.style.height = `${draggedItem.offsetHeight}px`;
+        container.appendChild(indicator);
+        return indicator;
+      }
+
+      /**
+       * 移除拖动指示器
+       */
+      function removeDragIndicator() {
+        const indicators = document.querySelectorAll('.drag-indicator');
+        indicators.forEach(indicator => indicator.remove());
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "name": "@examples/01_drag-and-drop",
+  "private": true,
+  "description": "A simple drag-and-drop example",
+  "version": "0.1.0",
+  "scripts": {
+    "start": "node index.js",
+    "server": "http-server"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
