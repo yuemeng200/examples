@@ -95,30 +95,29 @@ onUnmounted(() => {
     <div v-if="!imageUrl" class="upload-prompt" @click="fileInput.click()">
       <p>Click to upload, drag & drop, or paste an image</p>
     </div>
-    <img 
-      v-else 
-      :src="imageUrl" 
-      :alt="props.theme" 
-      class="uploaded-image" 
-      ref="imageElement"
-      @load="extractColorPalette"
-      crossorigin="anonymous"
-    >
+    <div v-else class="image-container">
+      <img 
+        :src="imageUrl" 
+        :alt="props.theme" 
+        class="uploaded-image" 
+        ref="imageElement"
+        @load="extractColorPalette"
+        crossorigin="anonymous"
+      >
+    </div>
   </div>
 </template>
 
 <style scoped lang="less">
 .image-uploader {
-  width: 40vmin;
   height: 20vmin; // 固定高度
-  max-width: 300px;
-  max-height: 150px;
+  max-height: 150px; // 最大高度
+  width: auto; // 宽度自适应
+  min-width: 200px; // 最小宽度
   overflow: hidden;
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #f0f0f0;
-  cursor: pointer;
   margin: 2vmin auto;
   border-radius: 8px;
 }
@@ -128,18 +127,36 @@ onUnmounted(() => {
   padding: 2vmin;
   color: #666;
   font-size: 2vmin;
+  background-color: #f0f0f0;
+  border: 2px solid #ddd;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+.image-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
 }
 
 .uploaded-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: 100%; // 图片高度 100%
+  width: auto; // 宽度自适应
+  object-fit: contain; // 确保整个图片可见
 }
 
 @media (max-width: 768px) {
   .image-uploader {
-    width: 80vw;
-    height: 40vw;
+    width: 80vw; // 在移动设备上使用视口宽度的 80%
+    height: 40vw; // 高度设置为宽度的一半，保持 2:1 的宽高比
+    max-height: none; // 移除最大高度限制
   }
 
   .upload-prompt {

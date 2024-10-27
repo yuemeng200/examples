@@ -1,9 +1,14 @@
 <script setup>
 import { ref, onMounted, onUnmounted, watch, computed } from 'vue';
-import themeWords from '@/assets/themeWords.js';
 import ImageUploader from './ImageUploader.vue';
+import { getWordExamples } from '@/utils/chat.js';
 
-const props = defineProps(['theme']);
+const props = defineProps({
+  theme: {
+    type: String,
+    default: ''
+  }
+});
 const words = ref([]);
 const currentWordIndex = ref(0);
 const isPlaying = ref(false);
@@ -12,6 +17,10 @@ const rotationAngle = ref(0);
 const targetRotation = ref(0);
 const animationProgress = ref(0);
 const currentTheme = ref({});
+const isLoading = ref(false);
+const inputTheme = ref('');
+const countdownTime = ref(0);
+const showCountdown = ref(false);
 
 // 计算高亮颜色
 const highlightColor = computed(() => {
@@ -41,15 +50,47 @@ const phoneticColor = computed(() => {
   return `rgb(${255 - rgb[0]}, ${255 - rgb[1]}, ${255 - rgb[2]})`;
 });
 
-const loadWords = () => {
-  const themeData = themeWords.find(t => t.theme === props.theme);
-  if (themeData) {
-    currentTheme.value = themeData;
-    words.value = themeData.words;
+const mockData = [
+  { word: "Mock", phonetic: "/mɒk/", zh: "模拟", themeZh: "模拟数据" },
+  { word: "Test", phonetic: "/test/", zh: "测试" },
+  { word: "Data", phonetic: "/ˈdeɪtə/", zh: "数据" },
+  { word: "Example", phonetic: "/ɪɡˈzæmpəl/", zh: "例子" },
+  { word: "Sample", phonetic: "/ˈsæmpəl/", zh: "样本" },
+  { word: "Dummy", phonetic: "/ˈdʌmi/", zh: "虚拟的" },
+  { word: "Fake", phonetic: "/feɪk/", zh: "假的" },
+  { word: "Simulate", phonetic: "/ˈsɪmjuleɪt/", zh: "模拟" },
+  { word: "Prototype", phonetic: "/ˈprəʊtətaɪp/", zh: "原型" },
+  { word: "Placeholder", phonetic: "/ˈpleɪshəʊldə/", zh: "占位符" },
+  { word: "Stub", phonetic: "/stʌb/", zh: "存根" },
+  { word: "Mimic", phonetic: "/ˈmɪmɪk/", zh: "模仿" }
+];
+
+const loadWords = async () => {
+  isLoading.value = true;
+  try {
+    if (inputTheme.value.toLowerCase() === 'mock') {
+      // 使用 mock 数据
+      words.value = mockData;
+      currentTheme.value = { theme: 'Mock', zh: '模拟数据' };
+    } else {
+      // 正常调用 API
+      words.value = await getWordExamples(inputTheme.value);
+      currentTheme.value = { 
+        theme: inputTheme.value, 
+        zh: words.value[0].themeZh || inputTheme.value 
+      };
+    }
     console.log('Loaded words:', words.value);
-    positionWords();
-  } else {
-    console.error('Theme not found:', props.theme);
+    if (words.value.length > 0) {
+      positionWords();
+    } else {
+      throw new Error('No words returned');
+    }
+  } catch (error) {
+    console.error('Error loading words:', error);
+    alert('Failed to load words. Please try again.');
+  } finally {
+    isLoading.value = false;
   }
 };
 
@@ -115,8 +156,19 @@ let intervalId;
 const startPlayback = () => {
   if (!isPlaying.value) {
     isPlaying.value = true;
-    highlightNextWord();
-    intervalId = setInterval(highlightNextWord, 3000);
+    countdownTime.value = 0;
+    showCountdown.value = true;
+    const countdownInterval = setInterval(() => {
+      countdownTime.value += 100;
+      if (countdownTime.value >= 3000) {
+        clearInterval(countdownInterval);
+        setTimeout(() => {
+          showCountdown.value = false;
+        }, 1000); // 等待1秒后隐藏倒计时
+        highlightNextWord();
+        intervalId = setInterval(highlightNextWord, 3000);
+      }
+    }, 100);
   }
 };
 
@@ -128,10 +180,21 @@ const handleColorExtracted = (color) => {
   backgroundColor.value = color;
 };
 
-// 移除 watch 钩子，因为主题不会在组件内部改变
-onMounted(() => {
-  loadWords();
+const handleSubmit = () => {
+  if (inputTheme.value.trim()) {
+    loadWords();
+  }
+};
+
+// 监听 props.theme 的变化
+watch(() => props.theme, (newTheme) => {
+  if (newTheme) {
+    inputTheme.value = newTheme;
+    loadWords();
+  }
 });
+
+// 移除 onMounted 钩子，因为我们不再自动加载单词
 
 onUnmounted(() => {
   clearInterval(intervalId);
@@ -141,53 +204,65 @@ onUnmounted(() => {
 
 <template>
   <div class="words-video" :style="{ backgroundColor: backgroundColor }">
-    <div class="title-container">
-      <h2 class="theme-title">{{ currentTheme.theme }}</h2>
-      <h2 class="theme-title-zh">{{ currentTheme.zh }}</h2>
+    <div v-if="!words.length" class="theme-input">
+      <input v-model="inputTheme" placeholder="Enter a theme" @keyup.enter="handleSubmit">
+      <button @click="handleSubmit" :disabled="isLoading">
+        {{ isLoading ? 'Loading...' : 'Generate Words' }}
+      </button>
     </div>
-    <div class="container">
-      <div class="words-container" :style="{ transform: `rotate(${rotationAngle}deg)` }">
-        <div v-for="(word, index) in words" :key="word.word" 
-             :class="['word', { 'highlighted': index === currentWordIndex }]"
-             :style="[
-               word.style, 
-               { 
-                 transform: `${word.style.transform} rotate(${-rotationAngle}deg)`,
-                 opacity: index === currentWordIndex ? 1 : 1 - animationProgress.value * (1 - nonHighlightedOpacity),
-                 scale: index === currentWordIndex ? 1 + animationProgress.value * 0.1 : 1 - animationProgress.value * 0.1
-               }
-             ]">
-          <div class="word-card" :style="index === currentWordIndex 
-            ? { 
-                backgroundColor: highlightColor, 
-                color: textColor,
-                transform: `scale(${1 + animationProgress.value * 0.1})`
-              } 
-            : {}">
-            <div class="word-text">{{ word.word }}</div>
-            <div class="phonetic">{{ word.phonetic }}</div>
+    <template v-else>
+      <div class="title-container">
+        <h2 class="theme-title">
+          主题：<span :style="{ color: highlightColor }">{{ currentTheme.zh }}</span>
+        </h2>
+      </div>
+      <div class="container">
+        <div class="words-container" :style="{ transform: `rotate(${rotationAngle}deg)` }">
+          <div v-for="(word, index) in words" :key="word.word" 
+               :class="['word', { 'highlighted': index === currentWordIndex }]"
+               :style="[
+                 word.style, 
+                 { 
+                   transform: `${word.style.transform} rotate(${-rotationAngle}deg)`,
+                   opacity: index === currentWordIndex ? 1 : 1 - animationProgress.value * (1 - nonHighlightedOpacity),
+                   scale: index === currentWordIndex ? 1 + animationProgress.value * 0.1 : 1 - animationProgress.value * 0.1
+                 }
+               ]">
+            <div class="word-card" :style="index === currentWordIndex 
+              ? { 
+                  backgroundColor: highlightColor, 
+                  color: textColor,
+                  transform: `scale(${1 + animationProgress.value * 0.1})`
+                } 
+              : {}">
+              <div class="word-text">{{ word.word }}</div>
+              <div class="phonetic">{{ word.phonetic }}</div>
+            </div>
           </div>
         </div>
-      </div>
-      <!-- 更新：中心单词显示 -->
-      <div class="center-word" v-if="words.length > 0">
-        <div class="center-word-text">{{ words[currentWordIndex].word }}</div>
-        <div class="center-word-phonetic" :style="{ color: phoneticColor }">
-          {{ words[currentWordIndex].phonetic }}
+        <!-- 更新：中心单词显示 -->
+        <div class="center-word" v-if="words.length > 0">
+          <div class="center-word-text">{{ words[currentWordIndex].word }}</div>
+          <div class="center-word-phonetic" :style="{ color: phoneticColor }">
+            {{ words[currentWordIndex].phonetic }}
+          </div>
+          <div class="center-word-zh">{{ words[currentWordIndex].zh }}</div>
         </div>
-        <div class="center-word-zh">{{ words[currentWordIndex].zh }}</div>
       </div>
-    </div>
-    <div class="theme-image">
-      <ImageUploader 
-        :theme="props.theme" 
-        @imageUploaded="handleImageUploaded"
-        @colorExtracted="handleColorExtracted"
-      />
-    </div>
-    <button v-if="!isPlaying" @click="startPlayback" class="control-button start-button">
-      Start
-    </button>
+      <div class="theme-image">
+        <ImageUploader 
+          :theme="props.theme" 
+          @imageUploaded="handleImageUploaded"
+          @colorExtracted="handleColorExtracted"
+        />
+      </div>
+      <button v-if="!isPlaying" @click="startPlayback" class="control-button start-button">
+        Start
+      </button>
+      <div v-if="isPlaying && showCountdown" class="countdown" :class="{ 'fade-out': countdownTime >= 3000 }">
+        {{ Math.ceil((3000 - countdownTime) / 1000) }}
+      </div>
+    </template>
   </div>
 </template>
 
@@ -423,4 +498,64 @@ onUnmounted(() => {
     font-size: 4vmin;
   }
 }
+
+.theme-input {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 20vh;
+
+  input {
+    width: 300px;
+    padding: 10px;
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+
+  button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: @primary-color;
+    color: white;
+    border: none;
+    border-radius: 5px;
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.countdown {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  font-size: 24px;
+  font-weight: bold;
+  color: white;
+  background-color: rgba(0, 0, 0, 0.5);
+  padding: 10px;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: opacity 1s ease-out;
+  opacity: 1;
+
+  &.fade-out {
+    opacity: 0;
+  }
+}
 </style>
+
+
+
+
+
+
+
+
