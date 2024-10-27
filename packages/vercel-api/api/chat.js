@@ -36,7 +36,7 @@ async function getAccessToken() {
  * Vercel Function：chatWithErnie
  */
 export default async function handler(req, res) {
-  const { prompt, model = 'ernie-speed-128k' } = req.query;
+  const { prompt, model = 'ernie-speed-128k' } = req.body;
 
   try {
     const accessToken = await getAccessToken();
