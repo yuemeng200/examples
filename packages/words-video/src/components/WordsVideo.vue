@@ -8,9 +8,10 @@ const words = ref([]);
 const currentWordIndex = ref(0);
 const isPlaying = ref(false);
 const backgroundColor = ref('rgb(200, 200, 200)'); // 默认灰色
-const rotationAngle = ref(0); // 新增：跟踪圆环旋转角度
+const rotationAngle = ref(0);
 const targetRotation = ref(0);
 const animationProgress = ref(0);
+const currentTheme = ref({});
 
 // 计算高亮颜色
 const highlightColor = computed(() => {
@@ -30,13 +31,26 @@ const textColor = computed(() => {
 const nonHighlightedOpacity = computed(() => {
   const rgb = backgroundColor.value.match(/\d+/g).map(Number);
   const brightness = (rgb[0] * 299 + rgb[1] * 587 + rgb[2] * 114) / 1000;
-  return brightness > 128 ? 0.6 : 0.4; // 根据背景亮度调整不透明度
+  return brightness > 128 ? 0.6 : 0.4; // 根据背景度调整不透明度
+});
+
+// 添加一个新的计算属性来决定音标的颜色
+const phoneticColor = computed(() => {
+  const rgb = backgroundColor.value.match(/\d+/g).map(Number);
+  // 使用背景色的互补色作为音标颜色
+  return `rgb(${255 - rgb[0]}, ${255 - rgb[1]}, ${255 - rgb[2]})`;
 });
 
 const loadWords = () => {
-  words.value = themeWords[props.theme] || [];
-  console.log('Loaded words:', words.value);
-  positionWords();
+  const themeData = themeWords.find(t => t.theme === props.theme);
+  if (themeData) {
+    currentTheme.value = themeData;
+    words.value = themeData.words;
+    console.log('Loaded words:', words.value);
+    positionWords();
+  } else {
+    console.error('Theme not found:', props.theme);
+  }
 };
 
 const positionWords = () => {
@@ -106,12 +120,6 @@ const startPlayback = () => {
   }
 };
 
-const stopPlayback = () => {
-  isPlaying.value = false;
-  clearInterval(intervalId);
-  window.speechSynthesis.cancel();
-};
-
 const handleImageUploaded = (imageData) => {
   console.log('Image uploaded');
 };
@@ -120,28 +128,24 @@ const handleColorExtracted = (color) => {
   backgroundColor.value = color;
 };
 
+// 移除 watch 钩子，因为主题不会在组件内部改变
 onMounted(() => {
   loadWords();
 });
 
 onUnmounted(() => {
-  stopPlayback();
+  clearInterval(intervalId);
+  window.speechSynthesis.cancel();
 });
-
-watch(() => props.theme, loadWords);
 </script>
 
 <template>
   <div class="words-video" :style="{ backgroundColor: backgroundColor }">
+    <div class="title-container">
+      <h2 class="theme-title">{{ currentTheme.theme }}</h2>
+      <h2 class="theme-title-zh">{{ currentTheme.zh }}</h2>
+    </div>
     <div class="container">
-      <div class="center-content">
-        <h2 class="theme-title">{{ props.theme }}</h2>
-        <ImageUploader 
-          :theme="props.theme" 
-          @imageUploaded="handleImageUploaded"
-          @colorExtracted="handleColorExtracted"
-        />
-      </div>
       <div class="words-container" :style="{ transform: `rotate(${rotationAngle}deg)` }">
         <div v-for="(word, index) in words" :key="word.word" 
              :class="['word', { 'highlighted': index === currentWordIndex }]"
@@ -165,12 +169,24 @@ watch(() => props.theme, loadWords);
           </div>
         </div>
       </div>
+      <!-- 更新：中心单词显示 -->
+      <div class="center-word" v-if="words.length > 0">
+        <div class="center-word-text">{{ words[currentWordIndex].word }}</div>
+        <div class="center-word-phonetic" :style="{ color: phoneticColor }">
+          {{ words[currentWordIndex].phonetic }}
+        </div>
+        <div class="center-word-zh">{{ words[currentWordIndex].zh }}</div>
+      </div>
     </div>
-    <button v-if="!isPlaying" @click="startPlayback" class="start-button">
-      Start Playback
-    </button>
-    <button v-else @click="stopPlayback" class="stop-button">
-      Stop Playback
+    <div class="theme-image">
+      <ImageUploader 
+        :theme="props.theme" 
+        @imageUploaded="handleImageUploaded"
+        @colorExtracted="handleColorExtracted"
+      />
+    </div>
+    <button v-if="!isPlaying" @click="startPlayback" class="control-button start-button">
+      Start
     </button>
   </div>
 </template>
@@ -178,43 +194,59 @@ watch(() => props.theme, loadWords);
 <style lang="less" scoped>
 .words-video {
   position: relative;
-  width: 100vw;
+  width: 100%;
   height: 100vh;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
   transition: background-color 0.5s ease;
+  overflow: hidden;
+  padding: 10vh 0 0;
+}
+
+.title-container {
+  text-align: center;
+  margin-bottom: 2vh;
+}
+
+.theme-title,
+.theme-title-zh {
+  font-size: 6vmin;
+  color: white;
+  text-transform: capitalize;
+  margin: 0;
+  padding: 0.5vh 0;
+  text-shadow: 
+    -1px -1px 0 #000,  
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+    1px 1px 0 #000,
+    0 0 10px rgba(0,0,0,0.5);
+  letter-spacing: 0.1em;
+}
+
+.theme-title-zh {
+  font-size: 5vmin;
 }
 
 .container {
-  width: 90vmin;
-  height: 90vmin;
+  width: 85vmin;
+  height: 85vmin;
+  max-width: 85vw;
+  max-height: 85vw;
   position: relative;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.2);
-  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
   overflow: visible;
   display: flex;
   justify-content: center;
   align-items: center;
+  margin: 2vh 0;
 }
 
-.center-content {
-  position: absolute;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  z-index: 10;
-}
-
-.theme-title {
-  font-size: 28px;
-  color: rgba(0, 0, 0, 0.8);
-  margin-bottom: 20px;
-  text-transform: capitalize;
+.theme-image {
+  margin-top: 2vh;
 }
 
 .words-container {
@@ -224,7 +256,7 @@ watch(() => props.theme, loadWords);
   width: 100%;
   height: 100%;
   pointer-events: none;
-  transition: transform 0.5s ease; // 添加过渡效果
+  transition: transform 0.5s ease;
 }
 
 .word {
@@ -233,12 +265,12 @@ watch(() => props.theme, loadWords);
 
   .word-card {
     background-color: rgba(255, 255, 255, 0.8);
-    padding: 10px 15px;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    padding: 1.5vmin 2vmin;
+    border-radius: 2vmin;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     transition: all 0.5s ease;
-    width: 130px;
-    height: 65px;
+    width: 20vmin;
+    height: 10vmin;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -246,36 +278,36 @@ watch(() => props.theme, loadWords);
   }
 
   &.highlighted .word-card {
-    box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.2);
     z-index: 100;
   }
 }
 
 .word-text {
-  font-size: 18px;
+  font-size: 2.5vmin;
   font-weight: bold;
   text-align: center;
   transition: all 0.5s ease;
 }
 
 .phonetic {
-  font-size: 14px;
-  margin-top: 5px;
+  font-size: 2vmin;
+  margin-top: 0.5vmin;
   text-align: center;
   transition: all 0.5s ease;
 }
 
-.start-button, .stop-button {
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
+.control-button {
+  position: fixed;
+  top: 20px;
+  right: 20px;
   padding: 10px 20px;
   font-size: 16px;
   cursor: pointer;
   border: none;
   border-radius: 5px;
   transition: all 0.3s ease;
+  z-index: 1000;
 }
 
 .start-button {
@@ -287,12 +319,108 @@ watch(() => props.theme, loadWords);
   }
 }
 
-.stop-button {
-  background-color: rgba(231, 76, 60, 0.8);
-  color: white;
+@media (max-width: 768px) {
+  .words-video {
+    padding: 5vh 0 0;
+  }
 
-  &:hover {
-    background-color: rgba(231, 76, 60, 1);
+  .theme-title {
+    font-size: 7vmin;
+  }
+
+  .theme-title-zh {
+    font-size: 6vmin;
+  }
+
+  .container {
+    width: 90vw;
+    height: 90vw;
+  }
+
+  .word .word-card {
+    width: 18vw;
+    height: 9vw;
+  }
+
+  .word-text {
+    font-size: 2.8vw;
+  }
+
+  .phonetic {
+    font-size: 2.2vw;
+  }
+
+  .control-button {
+    top: 10px;
+    right: 10px;
+    padding: 8px 16px;
+    font-size: 14px;
+  }
+
+  .center-word-text {
+    font-size: 6vmin;
+  }
+
+  .center-word-phonetic {
+    font-size: 4vmin;
+  }
+}
+
+.center-word {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  z-index: 10;
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 2vmin;
+  border-radius: 50%; // 改为圆形
+  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+  transition: all 0.5s ease;
+  width: 30vmin; // 减小宽度
+  height: 30vmin; // 设置高度与宽度相等
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.center-word-text {
+  font-size: 4vmin;
+  font-weight: bold;
+  color: @text-color;
+}
+
+.center-word-phonetic {
+  font-size: 2.5vmin;
+  margin-top: 0.5vmin;
+  // 颜色将由 phoneticColor 计算属性决定
+}
+
+.center-word-zh {
+  font-size: 3.5vmin;
+  color: @text-color;
+  margin-top: 0.5vmin;
+  font-weight: bold;
+}
+
+@media (max-width: 768px) {
+  .center-word {
+    width: 40vmin; // 在移动设备上稍微增大一些
+    height: 40vmin;
+  }
+
+  .center-word-text {
+    font-size: 5vmin;
+  }
+
+  .center-word-phonetic {
+    font-size: 3vmin;
+  }
+
+  .center-word-zh {
+    font-size: 4vmin;
   }
 }
 </style>

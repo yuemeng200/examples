@@ -109,26 +109,41 @@ onUnmounted(() => {
 
 <style scoped lang="less">
 .image-uploader {
-  width: 250px;
-  height: 250px;
-  border-radius: 50%;
+  width: 40vmin;
+  height: 20vmin; // 固定高度
+  max-width: 300px;
+  max-height: 150px;
   overflow: hidden;
   display: flex;
   justify-content: center;
   align-items: center;
   background-color: #f0f0f0;
   cursor: pointer;
+  margin: 2vmin auto;
+  border-radius: 8px;
 }
 
 .upload-prompt {
   text-align: center;
-  padding: 20px;
+  padding: 2vmin;
   color: #666;
+  font-size: 2vmin;
 }
 
 .uploaded-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+@media (max-width: 768px) {
+  .image-uploader {
+    width: 80vw;
+    height: 40vw;
+  }
+
+  .upload-prompt {
+    font-size: 3vmin;
+  }
 }
 </style>

@@ -7,7 +7,7 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 export default defineConfig({
   plugins: [
     vue(),
-    vueDevTools(),
+    // vueDevTools(),
   ],
   resolve: {
     alias: {
@@ -20,5 +20,9 @@ export default defineConfig({
         additionalData: `@import "@/styles/variables.less";`
       }
     }
+  },
+  server: {
+    host: '0.0.0.0',
+    port: 5173,
   }
 })

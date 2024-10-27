@@ -2,7 +2,7 @@
   "name": "examples",
   "private": true,
   "scripts": {
-    "create-package": "pnpm --filter @examples/create-package start"
+    "new": "pnpm --filter @examples/create-package start"
   },
   "workspaces": [
     "packages/*"

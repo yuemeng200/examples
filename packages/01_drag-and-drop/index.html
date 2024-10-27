@@ -144,13 +144,35 @@
       function dragStart(e) {
         draggedItem = e.target;
         e.dataTransfer.setData('text/plain', e.target.id);
+        
+        // 创建自定义拖动影像
+        const dragImage = e.target.cloneNode(true);
+        dragImage.classList.add('custom-drag-image');
+        dragImage.style.position = 'absolute';
+        dragImage.style.top = '-1000px';
+        dragImage.style.left = '-1000px';
+        dragImage.style.opacity = '0.8';
+        dragImage.style.pointerEvents = 'none';
+        
+        // 复制原始元素的所有计算样式
+        const computedStyle = window.getComputedStyle(e.target);
+        for (const prop of computedStyle) {
+          dragImage.style[prop] = computedStyle.getPropertyValue(prop);
+        }
 
-        // NOTE 拖动时的默认影像是无法自定义样式的，所以可以开启使用自定义影像
-        customDragImage(e);
+        // 将自定义拖动影像添加到 body
+        document.body.appendChild(dragImage);
 
-        setTimeout(() => {
-          e.target.classList.add('dragging');
-        }, 0);
+        // 设置自定义拖动影像
+        e.dataTransfer.setDragImage(dragImage, 0, 0);
+
+        // 立即添加 dragging 类
+        e.target.classList.add('dragging');
+
+        // 在拖动结束后移除拖动影像
+        e.target.addEventListener('dragend', () => {
+          document.body.removeChild(dragImage);
+        }, { once: true });
       }
 
       /**

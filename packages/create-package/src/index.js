@@ -21,13 +21,7 @@ program
     const { name } = await inquirer.prompt(questions);
 
     const rootDir = process.cwd();
-    const workspacePath = path.join(rootDir, '..', '..')
-    const packagePath = path.join(workspacePath, 'packages', name);
-
-    if (fs.existsSync(packagePath)) {
-      console.error(`Package ${name} already exists in ${packagePath}`);
-      return;
-    }
+    const packagePath = path.join(rootDir, 'packages', name);
 
     // Create package directory
     fs.ensureDirSync(packagePath);
@@ -39,7 +33,7 @@ program
       description: `${name} package`,
       main: 'index.js',
       scripts: {
-        start: 'node index.js'
+        test: 'echo "Error: no test specified" && exit 1'
       },
       keywords: [],
       author: '',
@@ -50,9 +44,6 @@ program
 
     // Create a basic index.js file
     fs.writeFileSync(path.join(packagePath, 'index.js'), '// Add your code here\n');
-
-    // Create a basic README.md file
-    fs.writeFileSync(path.join(packagePath, 'README.md'), `# ${name}\n`);
 
     console.log(`Package @examples/${name} created successfully in ${packagePath}`);
   });

@@ -93,34 +93,66 @@ watch(() => props.theme, (newTheme) => {
 </script>
 
 <template>
-  <div class="theme-image-container">
-    <img v-if="!isLoading && !error" :src="imageUrl" :alt="props.theme" class="theme-image">
-    <div v-else-if="isLoading" class="loading">Generating image...</div>
-    <div v-else class="error">{{ error }}</div>
+  <div class="image-uploader" ref="dropZone">
+    <input
+      type="file"
+      accept="image/*"
+      @change="onFileInputChange"
+      ref="fileInput"
+      style="display: none;"
+    >
+    <div v-if="!imageUrl" class="upload-prompt" @click="fileInput.click()">
+      <p>Click to upload, drag & drop, or paste an image</p>
+    </div>
+    <img 
+      v-else 
+      :src="imageUrl" 
+      :alt="props.theme" 
+      class="uploaded-image" 
+      ref="imageElement"
+      @load="extractColorPalette"
+      crossorigin="anonymous"
+    >
   </div>
 </template>
 
 <style scoped lang="less">
-.theme-image-container {
-  width: 250px;
-  height: 250px;
-  overflow: hidden;
+.image-uploader {
+  width: 30vmin;  // 减小宽度
+  height: 30vmin; // 减小高度
+  max-width: 200px; // 减小最大宽度
+  max-height: 200px; // 减小最大高度
   border-radius: 50%;
-  background: transparent;
+  overflow: hidden;
   display: flex;
   justify-content: center;
   align-items: center;
+  background-color: #f0f0f0;
+  cursor: pointer;
+  margin: 2vmin auto;
 }
 
-.theme-image {
+.upload-prompt {
+  text-align: center;
+  padding: 2vmin;
+  color: #666;
+  font-size: 2vmin; // 减小字体大小
+}
+
+.uploaded-image {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
 }
 
-.loading, .error {
-  color: #333;
-  text-align: center;
-  font-size: 18px;
+@media (max-width: 768px) {
+  .image-uploader {
+    width: 40vmin; // 在移动设备上稍微增大一些，但仍比之前小
+    height: 40vmin;
+  }
+
+  .upload-prompt {
+    font-size: 2.5vmin;
+  }
 }
 </style>
