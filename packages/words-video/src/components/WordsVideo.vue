@@ -213,7 +213,8 @@ onUnmounted(() => {
     <template v-else>
       <div class="title-container">
         <h2 class="theme-title">
-          主题：<span :style="{ color: highlightColor }">{{ currentTheme.zh }}</span>
+          <span class="theme-label">主题</span>
+          <span class="theme-value" :style="{ color: backgroundColor }">{{ currentTheme.zh }}</span>
         </h2>
       </div>
       <div class="container">
@@ -282,26 +283,40 @@ onUnmounted(() => {
 .title-container {
   text-align: center;
   margin-bottom: 2vh;
+  display: flex;
+  justify-content: center;
 }
 
-.theme-title,
-.theme-title-zh {
-  font-size: 6vmin;
-  color: white;
-  text-transform: capitalize;
+.theme-title {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 1vmin 2vmin;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   margin: 0;
-  padding: 0.5vh 0;
-  text-shadow: 
-    -1px -1px 0 #000,  
-    1px -1px 0 #000,
-    -1px 1px 0 #000,
-    1px 1px 0 #000,
-    0 0 10px rgba(0,0,0,0.5);
-  letter-spacing: 0.1em;
 }
 
-.theme-title-zh {
+.theme-label {
+  font-size: 4vmin;
+  color: #666;
+  margin-right: 1vmin;
+  position: relative;
+  padding-right: 1.5vmin;
+
+  &::after {
+    content: ':';
+    position: absolute;
+    right: 0;
+    color: #999;
+  }
+}
+
+.theme-value {
   font-size: 5vmin;
+  font-weight: bold;
+  padding-left: 1vmin;
+  transition: color 0.5s ease;
 }
 
 .container {
@@ -339,7 +354,7 @@ onUnmounted(() => {
   transition: opacity 0.5s ease, transform 0.5s ease;
 
   .word-card {
-    background-color: rgba(255, 255, 255, 0.8);
+    background-color: rgba(255, 255, 255, 1);
     padding: 1.5vmin 2vmin;
     border-radius: 2vmin;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -438,6 +453,18 @@ onUnmounted(() => {
 
   .center-word-phonetic {
     font-size: 4vmin;
+  }
+
+  .theme-title {
+    padding: 1.5vmin 3vmin;
+  }
+
+  .theme-label {
+    font-size: 5vmin;
+  }
+
+  .theme-value {
+    font-size: 6vmin;
   }
 }
 
@@ -551,6 +578,7 @@ onUnmounted(() => {
   }
 }
 </style>
+
 
 
 
