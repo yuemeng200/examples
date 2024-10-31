@@ -21,7 +21,7 @@ program
     const { name } = await inquirer.prompt(questions);
 
     const rootDir = process.cwd();
-    const packagePath = path.join(rootDir, 'packages', name);
+    const packagePath = path.join(rootDir, '..', name);
 
     // Create package directory
     fs.ensureDirSync(packagePath);
