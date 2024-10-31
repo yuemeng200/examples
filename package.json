@@ -2,7 +2,8 @@
   "name": "examples",
   "private": true,
   "scripts": {
-    "new": "pnpm --filter @examples/create-package start"
+    "new": "pnpm --filter @examples/create-package start",
+    "vercel": "pnpm --filter @examples/vercel-api start"
   },
   "workspaces": [
     "packages/*"
