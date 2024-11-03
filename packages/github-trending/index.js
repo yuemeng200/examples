@@ -27,10 +27,7 @@ async function getCurrentRawData() {
   fs.ensureDirSync(`./data/${dirName}/new`);
   const hotRepos = await getTopWeeklyStarredRepos();
   const newRepos = await getTopNewRepos();
-  if (hotRepos.length === 0 || newRepos.length === 0) {
-    console.error('获取数据失败');
-    return;
-  }
+
   [
     {
       repos: hotRepos,
@@ -42,11 +39,18 @@ async function getCurrentRawData() {
     }
   ].forEach(async (group) => {
     group.repos.forEach(async (repo) => {
-      const details = await getRepoDetail(repo.name);
-      const fileName = repo.name.replace('/', '_');
-      fs.writeFileSync(`./data/${dirName}/${group.type}/${fileName}.json`, JSON.stringify(details, null, 2));
-      console.log(`已保存 ${fileName} 的详细信息`);
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      try {
+        const details = await getRepoDetail(repo.name);
+        if (!details) {
+          return;
+        }
+        const fileName = repo.name.replace('/', '_');
+        fs.writeFileSync(`./data/${dirName}/${group.type}/${fileName}.json`, JSON.stringify(details, null, 2));
+        console.log(`已保存 ${fileName} 的详细信息`);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      } catch (error) {
+        console.error(`获取 ${repo.name} 的详细信息失败: ${error}`);
+      }
     });
   });
 }
