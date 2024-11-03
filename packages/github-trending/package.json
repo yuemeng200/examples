@@ -1,0 +1,19 @@
+{
+  "name": "@examples/github-trending",
+  "version": "0.1.0",
+  "description": "github-trending package",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.7.7",
+    "cheerio": "^1.0.0",
+    "dayjs": "^1.11.13",
+    "dotenv": "^16.4.5",
+    "fs-extra": "^11.2.0"
+  }
+}

