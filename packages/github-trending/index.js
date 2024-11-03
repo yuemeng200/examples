@@ -81,7 +81,7 @@ async function summaryReposInfo() {
     const summary = response.data.result;
     fs.writeFileSync(`${file}`, JSON.stringify({ ...details, summary }, null, 2));
     console.log(`已保存 ${file} 的总结信息`);
-    await new Promise(resolve => setTimeout(resolve, 5000));
+    await new Promise(resolve => setTimeout(resolve, 3000));
   });
 }
 
