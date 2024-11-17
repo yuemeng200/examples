@@ -1,4 +1,4 @@
-{
+export default {
   "name": "vercel/ai-chatbot",
   "description": "A full-featured, hackable Next.js AI chatbot built by Vercel",
   "stars": 9390,

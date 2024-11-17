@@ -1,9 +1,9 @@
 {
   "name": "ai16z/eliza",
   "description": "Conversational Agent for Twitter and Discord",
-  "stars": 1123,
-  "forks": 311,
-  "watchers": 1123,
+  "stars": 1132,
+  "forks": 314,
+  "watchers": 1132,
   "mainLanguage": "TypeScript",
   "languages": {
     "TypeScript": 955231,
@@ -20,7 +20,7 @@
   "hasWiki": false,
   "license": "MIT License",
   "createdAt": "2024-07-09T07:55:40Z",
-  "updatedAt": "2024-11-17T11:37:35Z",
+  "updatedAt": "2024-11-17T13:03:06Z",
   "pushedAt": "2024-11-17T09:04:16Z",
   "url": "https://github.com/ai16z/eliza",
   "gitUrl": "git://github.com/ai16z/eliza.git",

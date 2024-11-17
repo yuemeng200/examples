@@ -51,6 +51,92 @@
       </div>
 
       <div class="form-group">
+        <label>尺寸比例</label>
+        <div class="ratio-options">
+          <div
+            v-for="ratio in ratioOptions"
+            :key="ratio.value"
+            class="ratio-option"
+            :class="{ active: store.config.ratio === ratio.value }"
+            @click="store.updateConfig({ ratio: ratio.value })"
+          >
+            <div class="ratio-preview" :style="getRatioStyle(ratio)">
+              <span class="ratio-label">{{ ratio.label }}</span>
+            </div>
+            <div class="ratio-value">{{ ratio.value }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>外边距</label>
+        <div class="setting-item">
+          <div class="setting-label">
+            <span class="setting-value">{{ store.config.padding }}px</span>
+          </div>
+          <input 
+            type="range" 
+            v-model.number="store.config.padding" 
+            min="20" 
+            max="60" 
+            step="4"
+            class="slider"
+          >
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>内边距</label>
+        <div class="setting-item">
+          <div class="setting-label">
+            <span class="setting-value">{{ store.config.innerPadding }}px</span>
+          </div>
+          <input 
+            type="range" 
+            v-model.number="store.config.innerPadding" 
+            min="16" 
+            max="48" 
+            step="4"
+            class="slider"
+          >
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>模糊强度</label>
+        <div class="setting-item">
+          <div class="setting-label">
+            <span class="setting-value">{{ store.config.blurStrength }}px</span>
+          </div>
+          <input 
+            type="range" 
+            v-model.number="store.config.blurStrength" 
+            min="0" 
+            max="40" 
+            step="2"
+            class="slider"
+          >
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>背景透明度</label>
+        <div class="setting-item">
+          <div class="setting-label">
+            <span class="setting-value">{{ store.config.bgOpacity }}%</span>
+          </div>
+          <input 
+            type="range" 
+            v-model.number="store.config.bgOpacity" 
+            min="50" 
+            max="100" 
+            step="5"
+            class="slider"
+          >
+        </div>
+      </div>
+
+      <div class="form-group">
         <label>背景样式</label>
         <background-selector v-model="store.config.bg" />
       </div>
@@ -76,6 +162,22 @@ const fontOptions = [
   { label: '思源黑体', value: 'Noto Sans SC' }
 ];
 
+const ratioOptions = [
+  { label: '方形', value: '1:1', width: 100, height: 100 },
+  { label: '竖卡片', value: '3:4', width: 75, height: 100 },
+  { label: '横卡片', value: '16:9', width: 100, height: 56.25 },
+  { label: '长图', value: '9:16', width: 56.25, height: 100 },
+  { label: '黄金比例', value: '1.618:1', width: 100, height: 61.8 },
+  { label: '电影海报', value: '2:3', width: 66.67, height: 100 }
+];
+
+const getRatioStyle = (ratio) => {
+  return {
+    width: '60px',
+    height: `${(ratio.height / ratio.width) * 60}px`,
+  };
+};
+
 const resetConfig = () => {
   store.resetConfig();
   alert('已重置为默认配置');
@@ -88,7 +190,7 @@ const copyConfig = () => {
 };
 </script>
 
-<style scoped>
+<style lang="less" scoped>
 .config-editor {
   width: 350px;
   background: white;
@@ -218,5 +320,141 @@ button:hover {
 .solid-dark {
   background: #2c3e50;
   color: #ffffff;
+}
+
+/* 从 LayoutSettings 合并的样式 */
+.ratio-options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: @spacing-base;
+}
+
+.ratio-option {
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: @spacing-small;
+  padding: @spacing-small;
+  border: 2px solid transparent;
+  border-radius: @border-radius-small;
+  transition: all @transition-duration;
+
+  &.active {
+    border-color: @primary-color;
+    background: #f8f9fa;
+  }
+}
+
+.ratio-preview {
+  background: #e9ecef;
+  border-radius: @border-radius-small;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ratio-label {
+  font-size: 12px;
+  color: @secondary-color;
+}
+
+.ratio-value {
+  font-size: 12px;
+  color: @secondary-color;
+}
+
+.setting-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px 0;
+}
+
+.setting-label {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  color: @secondary-color;
+  font-size: 14px;
+}
+
+.setting-value {
+  color: @primary-color;
+  font-weight: 500;
+  min-width: 45px;
+  text-align: right;
+}
+
+.slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  background: #eee;
+  border-radius: 2px;
+  outline: none;
+  margin: 8px 0;
+  
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: @primary-color;
+    cursor: pointer;
+    transition: all 0.2s;
+    
+    &:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 0 4px rgba(44, 62, 80, 0.1);
+    }
+  }
+
+  &::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border: none;
+    border-radius: 50%;
+    background: @primary-color;
+    cursor: pointer;
+    transition: all 0.2s;
+    
+    &:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 0 4px rgba(44, 62, 80, 0.1);
+    }
+  }
+
+  &::-ms-thumb {
+    width: 16px;
+    height: 16px;
+    border: none;
+    border-radius: 50%;
+    background: @primary-color;
+    cursor: pointer;
+    transition: all 0.2s;
+    
+    &:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 0 4px rgba(44, 62, 80, 0.1);
+    }
+  }
+
+  &::-moz-range-track {
+    background: #eee;
+    border-radius: 2px;
+    height: 4px;
+  }
+
+  &::-ms-track {
+    width: 100%;
+    height: 4px;
+    border: none;
+    background: transparent;
+    border-color: transparent;
+    color: transparent;
+  }
 }
 </style> 

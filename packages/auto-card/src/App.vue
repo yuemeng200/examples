@@ -4,10 +4,8 @@
       <config-editor class="editor" />
     </div>
     <div class="center-panel">
-      <card-preview class="card-ready" />
-    </div>
-    <div class="right-panel">
-      <layout-settings />
+      <!-- <card-preview class="card-ready" /> -->
+      <test-card/>
     </div>
   </div>
 </template>
@@ -16,8 +14,8 @@
 import { onMounted } from 'vue';
 import CardPreview from './components/CardPreview.vue';
 import ConfigEditor from './components/ConfigEditor.vue';
-import LayoutSettings from './components/LayoutSettings.vue';
 import { useCardStore } from './store/card';
+import TestCard from './components/cards/TestCard.vue';
 
 const store = useCardStore();
 
@@ -45,17 +43,22 @@ onMounted(() => {
   background: @bg-light;
 }
 
-.left-panel, .right-panel {
+.left-panel {
   position: sticky;
   top: @spacing-large;
+  max-height: calc(100vh - @spacing-large * 2);
+  overflow-y: auto;
 }
 
 .center-panel {
+  position: sticky;
+  top: @spacing-large;
   display: flex;
   flex-direction: column;
   gap: @spacing-large;
   align-items: center;
   flex: 1;
+  height: calc(100vh - @spacing-large * 2);
 }
 
 .ratio-selector {

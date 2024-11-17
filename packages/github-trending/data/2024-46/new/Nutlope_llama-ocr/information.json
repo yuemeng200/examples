@@ -1,9 +1,9 @@
 {
   "name": "Nutlope/llama-ocr",
   "description": "Document to Markdown OCR library with Llama 3.2 vision",
-  "stars": 1131,
+  "stars": 1140,
   "forks": 77,
-  "watchers": 1131,
+  "watchers": 1140,
   "mainLanguage": "TypeScript",
   "languages": {
     "TypeScript": 2423
@@ -15,7 +15,7 @@
   "hasIssues": true,
   "hasWiki": false,
   "createdAt": "2024-11-12T01:26:25Z",
-  "updatedAt": "2024-11-17T11:34:19Z",
+  "updatedAt": "2024-11-17T12:55:26Z",
   "pushedAt": "2024-11-12T23:17:38Z",
   "url": "https://github.com/Nutlope/llama-ocr",
   "gitUrl": "git://github.com/Nutlope/llama-ocr.git",

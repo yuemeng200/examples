@@ -1,10 +1,11 @@
-const getTopWeeklyStarredRepos = require('./src/weeklyTrending');
-const getTopNewRepos = require('./src/newRepos');
-const getRepoDetail = require('./src/repoDetail');
-const { getCurrentYearAndWeek } = require('./src/utils/dateHelper');
+const getTopWeeklyStarredRepos = require('./weeklyTrending');
+const getTopNewRepos = require('./newRepos');
+const getRepoDetail = require('./repoDetail');
+const { getCurrentYearAndWeek } = require('./utils/dateHelper');
 const fs = require('fs-extra');
 const glob = require('glob');
 const axios = require('axios');
+const downloadImages = require('./utils/imageDownloader');
 
 module.exports = {
   getTopWeeklyStarredRepos,
@@ -45,7 +46,8 @@ async function getCurrentRawData() {
           return;
         }
         const fileName = repo.name.replace('/', '_');
-        fs.writeFileSync(`./data/${dirName}/${group.type}/${fileName}.json`, JSON.stringify(details, null, 2));
+        fs.ensureDirSync(`./data/${dirName}/${group.type}/${fileName}`);
+        fs.writeFileSync(`./data/${dirName}/${group.type}/${fileName}/information.json`, JSON.stringify(details, null, 2));
         console.log(`已保存 ${fileName} 的详细信息`);
         await new Promise(resolve => setTimeout(resolve, 1000));
       } catch (error) {
@@ -85,9 +87,25 @@ async function summaryReposInfo() {
   });
 }
 
+// 对于readme里出现的所有图片，下载到本地，保存到该仓库的images目录下，注意图片的url可能是相对路径，也可能是绝对路径
+async function downloadAllImages(repoName) {
+  const { year, week } = getCurrentYearAndWeek();
+  const dirName = `${year}-${week}`;
+  const baseDir = `./data/${dirName}`;
+  const files = glob.sync(`${baseDir}/**/information.json`);
+  files.forEach(async (file) => {
+    const content = fs.readFileSync(file, 'utf8');
+    const details = JSON.parse(content);
+    const repoName = details.name;
+    const readme = details.readme;
+    const packageBaseDir = file.replace('information.json', '');
+    await downloadImages(repoName, readme, packageBaseDir);
+  });
+}
+
 async function main() {
   await getCurrentRawData();
-  await summaryReposInfo();
+  await downloadAllImages();
 }
 
 main();

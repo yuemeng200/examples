@@ -1,9 +1,9 @@
 {
   "name": "haydenbleasel/next-forge",
   "description": "Production-grade Turborepo template for Next.js apps.",
-  "stars": 3653,
+  "stars": 3660,
   "forks": 285,
-  "watchers": 3653,
+  "watchers": 3660,
   "mainLanguage": "TypeScript",
   "languages": {
     "TypeScript": 300642,
@@ -35,7 +35,7 @@
   "hasWiki": false,
   "license": "MIT License",
   "createdAt": "2023-01-02T04:19:54Z",
-  "updatedAt": "2024-11-17T11:00:27Z",
+  "updatedAt": "2024-11-17T13:02:32Z",
   "pushedAt": "2024-11-16T10:40:34Z",
   "url": "https://github.com/haydenbleasel/next-forge",
   "gitUrl": "git://github.com/haydenbleasel/next-forge.git",

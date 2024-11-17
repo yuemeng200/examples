@@ -1,9 +1,9 @@
 {
   "name": "exo-explore/exo",
   "description": "Run your own AI cluster at home with everyday devices 📱💻 🖥️⌚",
-  "stars": 14810,
+  "stars": 14814,
   "forks": 794,
-  "watchers": 14810,
+  "watchers": 14814,
   "mainLanguage": "Python",
   "languages": {
     "Python": 292936,
@@ -20,7 +20,7 @@
   "hasWiki": false,
   "license": "GNU General Public License v3.0",
   "createdAt": "2024-06-24T18:36:22Z",
-  "updatedAt": "2024-11-17T11:43:39Z",
+  "updatedAt": "2024-11-17T13:04:37Z",
   "pushedAt": "2024-11-16T08:00:38Z",
   "url": "https://github.com/exo-explore/exo",
   "gitUrl": "git://github.com/exo-explore/exo.git",

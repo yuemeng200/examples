@@ -1,9 +1,9 @@
 {
   "name": "facebookresearch/watermark-anything",
   "description": "Official implementation of the paper \"Watermark Anything with Localized Messages\"",
-  "stars": 724,
+  "stars": 725,
   "forks": 16,
-  "watchers": 724,
+  "watchers": 725,
   "mainLanguage": "Jupyter Notebook",
   "languages": {
     "Jupyter Notebook": 9351481,
@@ -20,7 +20,7 @@
   "hasWiki": false,
   "license": "Other",
   "createdAt": "2024-11-11T23:28:26Z",
-  "updatedAt": "2024-11-17T09:32:34Z",
+  "updatedAt": "2024-11-17T12:46:27Z",
   "pushedAt": "2024-11-15T17:05:36Z",
   "url": "https://github.com/facebookresearch/watermark-anything",
   "gitUrl": "git://github.com/facebookresearch/watermark-anything.git",
