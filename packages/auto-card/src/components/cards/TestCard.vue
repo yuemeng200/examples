@@ -39,5 +39,9 @@ const packageInfo = reactive({
 </script>
 
 <style scoped lang="less">
-
+.test-card {
+  width: 50vw;
+  min-width: 50vw;
+  aspect-ratio: 3 / 4;
+}
 </style>
