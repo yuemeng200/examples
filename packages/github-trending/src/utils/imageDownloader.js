@@ -32,10 +32,11 @@ async function downloadImages(repoFullName, readme, baseDir) {
       // 处理相对路径
       const fullUrl = imageUrl.startsWith('http') 
         ? imageUrl 
-        : `https://raw.githubusercontent.com/${repoFullName}/main/${imageUrl.replace(/^\.?\//, '')}`;
+        : `https://raw.githubusercontent.com/${repoFullName}/${defaultBranch}/${imageUrl.replace(/^\.?\//, '')}`;
 
-      // 获取图片扩展名
-      const ext = path.extname(imageUrl) || '.png';
+      // 处理查询参数
+      const cleanUrl = fullUrl.split('?')[0]; // 移除 URL 中的查询参数
+      const ext = path.extname(cleanUrl) || '.png';
       const filename = `image_${index}${ext}`;
       const filePath = path.join(imagesDir, filename);
 
@@ -43,8 +44,18 @@ async function downloadImages(repoFullName, readme, baseDir) {
       const response = await axios({
         method: 'GET',
         url: fullUrl,
-        responseType: 'stream'
+        responseType: 'stream',
+        validateStatus: status => status === 200,
+        headers: {
+          'Accept': 'image/*'
+        }
       });
+
+      // 检查 Content-Type
+      const contentType = response.headers['content-type'];
+      if (!contentType?.startsWith('image/')) {
+        throw new Error(`Invalid content type: ${contentType}`);
+      }
 
       // 保存图片
       await new Promise((resolve, reject) => {

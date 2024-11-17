@@ -6,6 +6,8 @@ const fs = require('fs-extra');
 const glob = require('glob');
 const axios = require('axios');
 const downloadImages = require('./utils/imageDownloader');
+const { cleanupSvgFiles } = require('./utils/imageDownloader');
+const path = require('path');
 
 module.exports = {
   getTopWeeklyStarredRepos,
@@ -103,9 +105,19 @@ async function downloadAllImages(repoName) {
   });
 }
 
+async function cleanupExistingSvgs() {
+  const imagesDirs = glob.sync('**/images/', { cwd: __dirname });
+  imagesDirs.forEach(dir => {
+    const fullPath = path.join(__dirname, dir);
+    cleanupSvgFiles(fullPath);
+  });
+}
+
 async function main() {
+  await cleanupExistingSvgs();
   await getCurrentRawData();
   await downloadAllImages();
+  await summaryReposInfo();
 }
 
 main();
