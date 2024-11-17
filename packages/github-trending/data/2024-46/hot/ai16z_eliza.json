@@ -1,0 +1,33 @@
+{
+  "name": "ai16z/eliza",
+  "description": "Conversational Agent for Twitter and Discord",
+  "stars": 1123,
+  "forks": 311,
+  "watchers": 1123,
+  "mainLanguage": "TypeScript",
+  "languages": {
+    "TypeScript": 955231,
+    "PLpgSQL": 38745,
+    "JavaScript": 6271,
+    "Shell": 5303,
+    "Dockerfile": 663
+  },
+  "topics": [],
+  "readme": "# Eliza 🤖\n\n<div align=\"center\">\n  <img src=\"./docs/static/img/eliza_banner.jpg\" alt=\"Eliza Banner\" width=\"100%\" />\n</div>\n\n<div align=\"center\">\n  \n  📖 [Documentation](https://ai16z.github.io/eliza/) | 🎯 [Examples](https://github.com/thejoven/awesome-eliza)\n  \n</div>\n\n## ✨ Features\n\n-   🛠️ Full-featured Discord, Twitter and Telegram connectors\n-   🔗 Support for every model (Llama, Grok, OpenAI, Anthropic, etc.)\n-   👥 Multi-agent and room support\n-   📚 Easily ingest and interact with your documents\n-   💾 Retrievable memory and document store\n-   🚀 Highly extensible - create your own actions and clients\n-   ☁️ Supports many models (local Llama, OpenAI, Anthropic, Groq, etc.)\n-   📦 Just works!\n\n## 🎯 Use Cases\n\n-   🤖 Chatbots\n-   🕵️ Autonomous Agents\n-   📈 Business Process Handling\n-   🎮 Video Game NPCs\n-   🧠 Trading\n\n## 🌍 Translations\n\n<details>\n<summary>Available Languages</summary>\n\n-   [中文说明](./README_CN.md)\n-   [日本語の説明](./README_JA.md)\n-   [한국어 설명](./README_KOR.md)\n-   [Instructions en français](./README_FR.md)\n-   [Instruções em português](./README_PTBR.md)\n\n</details>\n\n## 🚀 Quick Start\n\n### Prerequisites\n\n-   [Python 2.7+](https://www.python.org/downloads/)\n-   [Node.js 22+](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)\n-   [pnpm](https://pnpm.io/installation)\n\n> **Note for Windows Users:** WSL is required\n\n### Edit the .env file\n\nCopy .env.example to .env and fill in the appropriate values\n\n```\ncp .env.example .env\n```\n\n### Edit the character file\n\n1. Open `src/core/defaultCharacter.ts` to modify the default character\n\n2. To load custom characters:\n    - Use `pnpm start --characters=\"path/to/your/character.json\"`\n    - Multiple character files can be loaded simultaneously\n\n### Start Eliza\n\nAfter setting up the .env file and character file, you can start the bot with the following command:\n\n```bash\npnpm i\npnpm build\npnpm start\n\n# The project iterates fast, sometimes you need to clean the project if you are coming back to the project\npnpm clean\n```\n\n#### Additional Requirements\n\nYou may need to install Sharp. If you see an error when starting up, try installing it with the following command:\n\n```\npnpm install --include=optional sharp\n```\n\n### Community & contact\n\n-   [GitHub Issues](https://github.com/ai16z/eliza/issues). Best for: bugs you encounter using Eliza, and feature proposals.\n-   [Discord](https://discord.gg/ai16z). Best for: sharing your applications and hanging out with the community.\n\n## Contributors\n\n<a href=\"https://github.com/ai16z/eliza/graphs/contributors\">\n  <img src=\"https://contrib.rocks/image?repo=ai16z/eliza\" />\n</a>\n\n## Star History\n\n[![Star History Chart](https://api.star-history.com/svg?repos=ai16z/eliza&type=Date)](https://star-history.com/#ai16z/eliza&Date)\n",
+  "homepage": "https://ai16z.github.io/eliza/",
+  "defaultBranch": "main",
+  "hasIssues": true,
+  "hasWiki": false,
+  "license": "MIT License",
+  "createdAt": "2024-07-09T07:55:40Z",
+  "updatedAt": "2024-11-17T11:37:35Z",
+  "pushedAt": "2024-11-17T09:04:16Z",
+  "url": "https://github.com/ai16z/eliza",
+  "gitUrl": "git://github.com/ai16z/eliza.git",
+  "sshUrl": "git@github.com:ai16z/eliza.git",
+  "owner": {
+    "name": "ai16z",
+    "avatarUrl": "https://avatars.githubusercontent.com/u/186240462?v=4",
+    "url": "https://github.com/ai16z"
+  }
+}

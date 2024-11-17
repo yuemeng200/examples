@@ -1,0 +1,48 @@
+{
+  "name": "haydenbleasel/next-forge",
+  "description": "Production-grade Turborepo template for Next.js apps.",
+  "stars": 3653,
+  "forks": 285,
+  "watchers": 3653,
+  "mainLanguage": "TypeScript",
+  "languages": {
+    "TypeScript": 300642,
+    "MDX": 81600,
+    "CSS": 3735,
+    "JavaScript": 2057
+  },
+  "topics": [
+    "betterstack",
+    "boilerplate",
+    "clerk",
+    "dark-mode",
+    "feature-flags",
+    "neon",
+    "nextjs",
+    "posthog",
+    "prisma",
+    "react",
+    "sentry",
+    "seo",
+    "stripe",
+    "tailwindcss",
+    "typescript"
+  ],
+  "readme": "# next-forge\n\n**Production-grade Turborepo template for Next.js apps.**\n\n[next-forge](https://github.com/haydenbleasel/next-forge) is a [Next.js](https://nextjs.org/) project boilerplate for modern web application. It is designed to be a comprehensive starting point for new apps, providing a solid, opinionated foundation with a minimal amount of configuration.\n\nClone the repo using:\n\n```sh\nnpx next-forge@latest init [my-project]\n```\n\nThen read the [docs](https://docs.next-forge.com) for more information.\n\n<a href=\"https://github.com/haydenbleasel/next-forge/graphs/contributors\">\n  <img src=\"https://contrib.rocks/image?repo=haydenbleasel/next-forge\" />\n</a>\n\nMade with [contrib.rocks](https://contrib.rocks).\n",
+  "homepage": "https://www.next-forge.com/",
+  "defaultBranch": "main",
+  "hasIssues": true,
+  "hasWiki": false,
+  "license": "MIT License",
+  "createdAt": "2023-01-02T04:19:54Z",
+  "updatedAt": "2024-11-17T11:00:27Z",
+  "pushedAt": "2024-11-16T10:40:34Z",
+  "url": "https://github.com/haydenbleasel/next-forge",
+  "gitUrl": "git://github.com/haydenbleasel/next-forge.git",
+  "sshUrl": "git@github.com:haydenbleasel/next-forge.git",
+  "owner": {
+    "name": "haydenbleasel",
+    "avatarUrl": "https://avatars.githubusercontent.com/u/4142719?v=4",
+    "url": "https://github.com/haydenbleasel"
+  }
+}
