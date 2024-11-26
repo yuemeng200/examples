@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+  </style>
+</head>
+<body>
+  <canvas id="canvas" style="width: 400px; height: 300px;" width="400" height="300"></canvas>
+</body>
+<script>
+  const canvas = document.getElementById('canvas')
+  const ctx = canvas.getContext('2d', { willReadFrequently: true })
+  ctx.fillRect(0, 0, 400, 300)
+  ctx.beginPath()
+  ctx.moveTo(100, 100)
+  ctx.lineTo(200, 200)
+  ctx.lineTo(100, 200)
+  ctx.closePath()
+  ctx.fillStyle = 'red'
+  ctx.fill()
+
+  // 点击canvas时获取点击位置的颜色
+  function getColor(e) {
+    const rect = canvas.getBoundingClientRect()
+    const x = e.clientX - rect.left
+    const y = e.clientY - rect.top
+    const color = ctx.getImageData(x, y, 1, 1).data
+    console.log(color)
+    return `#${color[0].toString(16)}${color[1].toString(16)}${color[2].toString(16)}`
+  }
+
+  // 获取点击区域颜色的边界path
+  function getBoundaryPath(e) {
+    const rect = canvas.getBoundingClientRect()
+    const startX = Math.round(e.clientX - rect.left)
+    const startY = Math.round(e.clientY - rect.top)
+    
+    // 获取起始点颜色
+    const targetColorData = ctx.getImageData(startX, startY, 1, 1).data
+    
+    // 1. 寻找边界点 - 检查四个方向
+    let boundaryPoint = null
+    const directions = [[0, -1], [1, 0], [0, 1], [-1, 0]] // 上右下左
+    
+    for (const [dx, dy] of directions) {
+      let x = startX
+      let y = startY
+      
+      while (x >= 0 && x < canvas.width && y >= 0 && y < canvas.height) {
+        const currentColor = ctx.getImageData(x, y, 1, 1).data
+        const nextX = x + dx
+        const nextY = y + dy
+        
+        // 检查下一个点是否超出范围
+        if (nextX < 0 || nextX >= canvas.width || nextY < 0 || nextY >= canvas.height) {
+          boundaryPoint = [x, y]
+          break
+        }
+        
+        // 检查下一个点是否颜色不同
+        const nextColor = ctx.getImageData(nextX, nextY, 1, 1).data
+        if (!colorMatch(nextColor, targetColorData)) {
+          boundaryPoint = [x, y]
+          break
+        }
+        
+        x += dx
+        y += dy
+      }
+      
+      if (boundaryPoint) break
+    }
+    
+    if (!boundaryPoint) return // 没找到边界
+    
+    // 2. 从边界起始点开始追踪
+    const startPoint = boundaryPoint
+    const boundaryPoints = [startPoint]
+    let currentPoint = [...startPoint]
+    
+    // 八个方向：从右开始顺时针
+    const trackDirections = [
+      [1, 0], [1, -1], [0, -1], [-1, -1],
+      [-1, 0], [-1, 1], [0, 1], [1, 1]
+    ]
+    
+    let dirIndex = 0
+    
+    do {
+      let found = false
+      let startDirIndex = dirIndex
+      
+      // 从当前方向开始，逆时针查找下一个边界点
+      for (let i = 0; i < 8; i++) {
+        dirIndex = (startDirIndex + i) % 8
+        const nextPoint = [
+          currentPoint[0] + trackDirections[dirIndex][0],
+          currentPoint[1] + trackDirections[dirIndex][1]
+        ]
+        
+        // 检查是否在canvas范围内
+        if (nextPoint[0] >= 0 && nextPoint[0] < canvas.width &&
+            nextPoint[1] >= 0 && nextPoint[1] < canvas.height) {
+          
+          const nextColor = ctx.getImageData(nextPoint[0], nextPoint[1], 1, 1).data
+          
+          // 如果下一个点不是目标颜色，继续搜索
+          if (!colorMatch(nextColor, targetColorData)) {
+            continue
+          }
+          
+          // 检查是否是边界点（至少有一个相邻点不是目标颜色或者是canvas边界）
+          let isBoundary = false
+          for (let j = 0; j < 8; j++) {
+            const checkPoint = [
+              nextPoint[0] + trackDirections[j][0],
+              nextPoint[1] + trackDirections[j][1]
+            ]
+            
+            if (checkPoint[0] < 0 || checkPoint[0] >= canvas.width ||
+                checkPoint[1] < 0 || checkPoint[1] >= canvas.height) {
+              isBoundary = true
+              break
+            }
+            
+            const checkColor = ctx.getImageData(checkPoint[0], checkPoint[1], 1, 1).data
+            if (!colorMatch(checkColor, targetColorData)) {
+              isBoundary = true
+              break
+            }
+          }
+          
+          if (isBoundary) {
+            currentPoint = nextPoint
+            boundaryPoints.push(currentPoint)
+            dirIndex = (dirIndex + 6) % 8
+            found = true
+            break
+          }
+        }
+      }
+      
+      if (!found) break
+      
+      // 检查是否回到起点
+      if (boundaryPoints.length > 2) {
+        const dx = Math.abs(currentPoint[0] - startPoint[0])
+        const dy = Math.abs(currentPoint[1] - startPoint[1])
+        if (dx <= 1 && dy <= 1) {
+          break
+        }
+      }
+      
+    } while (boundaryPoints.length < 10000)
+    
+    // 绘制路径用于测试
+    // 先绘制外边界（稍微扩大一个像素）
+    ctx.beginPath()
+    ctx.moveTo(boundaryPoints[0][0] + 1, boundaryPoints[0][1] + 1)
+    for (let i = 1; i < boundaryPoints.length; i++) {
+      ctx.lineTo(boundaryPoints[i][0] + 1, boundaryPoints[i][1] + 1)
+    }
+    ctx.closePath()
+    ctx.strokeStyle = 'blue'
+    ctx.stroke()
+
+    // 再绘制内边界（稍微缩小一个像素）
+    ctx.beginPath()
+    ctx.moveTo(boundaryPoints[0][0] - 1, boundaryPoints[0][1] - 1)
+    for (let i = 1; i < boundaryPoints.length; i++) {
+      ctx.lineTo(boundaryPoints[i][0] - 1, boundaryPoints[i][1] - 1)
+    }
+    ctx.closePath()
+    ctx.strokeStyle = 'blue'
+    ctx.stroke()
+
+    // 绘制原始边界
+    ctx.beginPath()
+    ctx.moveTo(boundaryPoints[0][0], boundaryPoints[0][1])
+    for (let i = 1; i < boundaryPoints.length; i++) {
+      ctx.lineTo(boundaryPoints[i][0], boundaryPoints[i][1])
+    }
+    ctx.closePath()
+    ctx.strokeStyle = 'blue'
+    ctx.stroke()
+    
+    console.log('Found boundary points:', boundaryPoints.length)
+    return boundaryPoints
+  }
+
+  // 颜色匹配函数（考虑容差）
+  function colorMatch(color1, color2, tolerance = 1) {
+    return Math.abs(color1[0] - color2[0]) <= tolerance
+      && Math.abs(color1[1] - color2[1]) <= tolerance
+      && Math.abs(color1[2] - color2[2]) <= tolerance
+      && Math.abs(color1[3] - color2[3]) <= tolerance
+  }
+
+  canvas.addEventListener('click', (e) => {
+    getBoundaryPath(e)
+  })
+</script>
+</html>

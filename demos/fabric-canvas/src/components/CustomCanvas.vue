@@ -138,6 +138,9 @@ onMounted(() => {
     isDrawingMode: true,
     width: window.innerWidth,
     height: window.innerHeight - 100,
+    contextOptions: {
+      willReadFrequently: true
+    }
   })
 
   canvas.freeDrawingBrush = new PencilBrush(canvas)
