@@ -34,12 +34,41 @@
 
   // 获取点击区域颜色的边界path
   function getBoundaryPath(e) {
+    console.time('Total Operation')
+    
+    console.time('Get ImageData')
     const rect = canvas.getBoundingClientRect()
     const startX = Math.round(e.clientX - rect.left)
     const startY = Math.round(e.clientY - rect.top)
     
+    // 一次性获取整个 Canvas 的 ImageData
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+    const data = imageData.data
+    console.timeEnd('Get ImageData')
+    
+    console.time('Find Boundary')
     // 获取起始点颜色
-    const targetColorData = ctx.getImageData(startX, startY, 1, 1).data
+    const startIndex = (startY * canvas.width + startX) * 4
+    const targetColorData = new Uint8ClampedArray([
+      data[startIndex],
+      data[startIndex + 1],
+      data[startIndex + 2],
+      data[startIndex + 3]
+    ])
+    
+    // 获取指定坐标的颜色
+    const getColorAt = (x, y) => {
+      if (x < 0 || x >= canvas.width || y < 0 || y >= canvas.height) {
+        return new Uint8ClampedArray([0, 0, 0, 0])
+      }
+      const index = (y * canvas.width + x) * 4
+      return new Uint8ClampedArray([
+        data[index],
+        data[index + 1],
+        data[index + 2],
+        data[index + 3]
+      ])
+    }
     
     // 1. 寻找边界点 - 检查四个方向
     let boundaryPoint = null
@@ -50,7 +79,6 @@
       let y = startY
       
       while (x >= 0 && x < canvas.width && y >= 0 && y < canvas.height) {
-        const currentColor = ctx.getImageData(x, y, 1, 1).data
         const nextX = x + dx
         const nextY = y + dy
         
@@ -61,7 +89,7 @@
         }
         
         // 检查下一个点是否颜色不同
-        const nextColor = ctx.getImageData(nextX, nextY, 1, 1).data
+        const nextColor = getColorAt(nextX, nextY)
         if (!colorMatch(nextColor, targetColorData)) {
           boundaryPoint = [x, y]
           break
@@ -74,7 +102,11 @@
       if (boundaryPoint) break
     }
     
-    if (!boundaryPoint) return // 没找到边界
+    if (!boundaryPoint) {
+      console.timeEnd('Find Boundary')
+      console.timeEnd('Total Operation')
+      return // 没找到边界
+    }
     
     // 2. 从边界起始点开始追踪
     const startPoint = boundaryPoint
@@ -89,6 +121,11 @@
     
     let dirIndex = 0
     
+    // 使用 Set 来记录已访问的点，避免重复
+    const visited = new Set()
+    const pointToKey = (p) => `${p[0]},${p[1]}`
+    visited.add(pointToKey(startPoint))
+    
     do {
       let found = false
       let startDirIndex = dirIndex
@@ -101,11 +138,14 @@
           currentPoint[1] + trackDirections[dirIndex][1]
         ]
         
-        // 检查是否在canvas范围内
+        const nextPointKey = pointToKey(nextPoint)
+        
+        // 检查是否在canvas范围内且未访问过
         if (nextPoint[0] >= 0 && nextPoint[0] < canvas.width &&
-            nextPoint[1] >= 0 && nextPoint[1] < canvas.height) {
+            nextPoint[1] >= 0 && nextPoint[1] < canvas.height &&
+            !visited.has(nextPointKey)) {
           
-          const nextColor = ctx.getImageData(nextPoint[0], nextPoint[1], 1, 1).data
+          const nextColor = getColorAt(nextPoint[0], nextPoint[1])
           
           // 如果下一个点不是目标颜色，继续搜索
           if (!colorMatch(nextColor, targetColorData)) {
@@ -126,7 +166,7 @@
               break
             }
             
-            const checkColor = ctx.getImageData(checkPoint[0], checkPoint[1], 1, 1).data
+            const checkColor = getColorAt(checkPoint[0], checkPoint[1])
             if (!colorMatch(checkColor, targetColorData)) {
               isBoundary = true
               break
@@ -136,6 +176,7 @@
           if (isBoundary) {
             currentPoint = nextPoint
             boundaryPoints.push(currentPoint)
+            visited.add(nextPointKey)
             dirIndex = (dirIndex + 6) % 8
             found = true
             break
@@ -156,6 +197,9 @@
       
     } while (boundaryPoints.length < 10000)
     
+    console.timeEnd('Find Boundary')
+    
+    console.time('Draw Path')
     // 绘制路径用于测试
     // 先绘制外边界（稍微扩大一个像素）
     ctx.beginPath()
@@ -186,8 +230,10 @@
     ctx.closePath()
     ctx.strokeStyle = 'blue'
     ctx.stroke()
+    console.timeEnd('Draw Path')
     
     console.log('Found boundary points:', boundaryPoints.length)
+    console.timeEnd('Total Operation')
     return boundaryPoints
   }
 
@@ -199,8 +245,97 @@
       && Math.abs(color1[3] - color2[3]) <= tolerance
   }
 
+  // 添加泛洪填充函数
+  function floodFill(e) {
+    console.time('Flood Fill Total')
+    
+    console.time('Get ImageData')
+    const rect = canvas.getBoundingClientRect()
+    const startX = Math.round(e.clientX - rect.left)
+    const startY = Math.round(e.clientY - rect.top)
+    
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+    const data = imageData.data
+    console.timeEnd('Get ImageData')
+    
+    console.time('Fill Operation')
+    // 获取起始点颜色
+    const startIndex = (startY * canvas.width + startX) * 4
+    const targetColor = new Uint8ClampedArray([
+      data[startIndex],
+      data[startIndex + 1],
+      data[startIndex + 2],
+      data[startIndex + 3]
+    ])
+    
+    // 使用栈来存储待处理的像素点
+    const stack = [[startX, startY]]
+    const visited = new Set([`${startX},${startY}`])
+    
+    // 四个方向：上右下左
+    const directions = [[0, -1], [1, 0], [0, 1], [-1, 0]]
+    
+    while (stack.length > 0) {
+      const [x, y] = stack.pop()
+      const index = (y * canvas.width + x) * 4
+      
+      // 填充当前像素
+      data[index] = 0      // R
+      data[index + 1] = 0  // G
+      data[index + 2] = 255// B
+      data[index + 3] = 255// A
+      
+      // 检查四个方向
+      for (const [dx, dy] of directions) {
+        const newX = x + dx
+        const newY = y + dy
+        const key = `${newX},${newY}`
+        
+        // 检查边界和是否访问过
+        if (newX < 0 || newX >= canvas.width || 
+            newY < 0 || newY >= canvas.height || 
+            visited.has(key)) {
+          continue
+        }
+        
+        // 检查颜色是否匹配
+        const newIndex = (newY * canvas.width + newX) * 4
+        const currentColor = new Uint8ClampedArray([
+          data[newIndex],
+          data[newIndex + 1],
+          data[newIndex + 2],
+          data[newIndex + 3]
+        ])
+        
+        if (colorMatch(currentColor, targetColor)) {
+          stack.push([newX, newY])
+          visited.add(key)
+        }
+      }
+    }
+    console.timeEnd('Fill Operation')
+    
+    console.time('Put ImageData')
+    ctx.putImageData(imageData, 0, 0)
+    console.timeEnd('Put ImageData')
+    
+    console.log('Processed pixels:', visited.size)
+    console.timeEnd('Flood Fill Total')
+  }
+
+  // 修改事件监听器，添加右键点击处理
   canvas.addEventListener('click', (e) => {
-    getBoundaryPath(e)
+    // TEST
+    if (e.button === 2 || true) { // 右键点击
+      floodFill(e)
+    } else {
+      getBoundaryPath(e)
+    }
+  })
+
+  // 禁用右键菜单
+  canvas.addEventListener('contextmenu', (e) => {
+    e.preventDefault()
   })
 </script>
 </html>
