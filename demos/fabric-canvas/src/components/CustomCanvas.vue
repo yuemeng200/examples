@@ -49,11 +49,10 @@
 import { ref, computed, onMounted } from 'vue'
 import { Canvas, PencilBrush, Path, Object as FabricObject, util } from 'fabric'
 
-type ToolType = 'draw' | 'fill' | 'eraser'
+type ToolType = 'draw' | 'eraser'
 
 const tools = [
   { type: 'draw' as ToolType, label: '画笔' },
-  { type: 'fill' as ToolType, label: '填充' },
   { type: 'eraser' as ToolType, label: '橡皮擦' },
 ]
 
@@ -65,13 +64,8 @@ let canvas: Canvas
 
 // 修改历史记录的数据结构
 interface DrawAction {
-  type: 'draw' | 'fill'
+  type: 'draw'
   object?: FabricObject
-  fillData?: {
-    target: Path
-    oldFill: string | null
-    newFill: string
-  }
 }
 
 const undoStack = ref<DrawAction[]>([])
@@ -99,48 +93,7 @@ const setTool = (tool: ToolType) => {
         canvas.freeDrawingBrush.color = '#ffffff'
       }
       break
-    case 'fill':
-      canvas.isDrawingMode = false
-      canvas.defaultCursor = 'pointer'
-      setupFillMode()
-      break
   }
-}
-
-// 修改填充模式
-const setupFillMode = () => {
-  if (!canvas) return
-
-  canvas.off('mouse:down')
-
-  canvas.on('mouse:down', e => {
-    if (currentTool.value !== 'fill' || !e.target) return
-
-    const target = e.target as Path
-    if (target.type === 'path') {
-      const oldFill = target.get('fill')
-      target.set({
-        fill: lineColor.value,
-        selectable: false,
-        hoverCursor: 'pointer',
-        evented: true,
-        hasBorders: false,
-        hasControls: false,
-      })
-
-      undoStack.value.push({
-        type: 'fill',
-        fillData: {
-          target,
-          oldFill,
-          newFill: lineColor.value,
-        },
-      })
-      redoStack.value = []
-
-      canvas.requestRenderAll()
-    }
-  })
 }
 
 // 撤销
@@ -150,20 +103,14 @@ const undo = () => {
   const lastAction = undoStack.value.pop()
   if (!lastAction) return
 
-  if (lastAction.type === 'draw') {
-    const objects = canvas.getObjects()
-    const lastObject = objects[objects.length - 1]
-    if (lastObject) {
-      canvas.remove(lastObject)
-      redoStack.value.push({
-        type: 'draw',
-        object: lastObject,
-      })
-    }
-  } else if (lastAction.type === 'fill' && lastAction.fillData) {
-    const { target, oldFill } = lastAction.fillData
-    target.set('fill', oldFill)
-    redoStack.value.push(lastAction)
+  const objects = canvas.getObjects()
+  const lastObject = objects[objects.length - 1]
+  if (lastObject) {
+    canvas.remove(lastObject)
+    redoStack.value.push({
+      type: 'draw',
+      object: lastObject,
+    })
   }
 
   canvas.requestRenderAll()
@@ -174,25 +121,13 @@ const redo = () => {
   if (!canRedo.value) return
 
   const lastAction = redoStack.value.pop()
-  if (!lastAction) return
+  if (!lastAction || !lastAction.object) return
 
-  if (lastAction.type === 'draw' && lastAction.object) {
-    // 克隆对象以避免引用问题
-    // const clonedObject = util.cloneObject(lastAction.object)
-    lastAction.object.clone((clonedObject: any) => {
-      canvas.add(clonedObject)
-      undoStack.value.push({
-        type: 'draw',
-        object: clonedObject,
-      })
-      canvas.requestRenderAll()
-    })
-  } else if (lastAction.type === 'fill' && lastAction.fillData) {
-    const { target, newFill } = lastAction.fillData
-    target.set('fill', newFill)
-    undoStack.value.push(lastAction)
-  }
-
+  canvas.add(lastAction.object)
+  undoStack.value.push({
+    type: 'draw',
+    object: lastAction.object,
+  })
   canvas.requestRenderAll()
 }
 
