@@ -47,7 +47,7 @@
 
 <script lang="ts" setup>
 import { ref, computed, onMounted } from 'vue'
-import { Canvas, PencilBrush, Path, Object as FabricObject } from 'fabric'
+import { Canvas, PencilBrush, Path, Object as FabricObject, util } from 'fabric'
 
 type ToolType = 'draw' | 'fill' | 'eraser'
 
@@ -65,17 +65,17 @@ let canvas: Canvas
 
 // 修改历史记录的数据结构
 interface DrawAction {
-  type: 'draw' | 'fill';
-  object?: FabricObject;
+  type: 'draw' | 'fill'
+  object?: FabricObject
   fillData?: {
-    target: Path;
-    oldFill: string | null;
-    newFill: string;
-  };
+    target: Path
+    oldFill: string | null
+    newFill: string
+  }
 }
 
-const undoStack = ref<DrawAction[]>([]);
-const redoStack = ref<DrawAction[]>([]);
+const undoStack = ref<DrawAction[]>([])
+const redoStack = ref<DrawAction[]>([])
 
 // 计算属性：是否可以撤销/重做
 const canUndo = computed(() => undoStack.value.length > 0)
@@ -109,89 +109,92 @@ const setTool = (tool: ToolType) => {
 
 // 修改填充模式
 const setupFillMode = () => {
-  if (!canvas) return;
+  if (!canvas) return
 
-  canvas.off('mouse:down');
-  
-  canvas.on('mouse:down', (e) => {
-    if (currentTool.value !== 'fill' || !e.target) return;
-    
-    const target = e.target as Path;
+  canvas.off('mouse:down')
+
+  canvas.on('mouse:down', e => {
+    if (currentTool.value !== 'fill' || !e.target) return
+
+    const target = e.target as Path
     if (target.type === 'path') {
-      const oldFill = target.get('fill');
+      const oldFill = target.get('fill')
       target.set({
         fill: lineColor.value,
         selectable: false,
         hoverCursor: 'pointer',
         evented: true,
         hasBorders: false,
-        hasControls: false
-      });
-      
+        hasControls: false,
+      })
+
       undoStack.value.push({
         type: 'fill',
         fillData: {
           target,
           oldFill,
-          newFill: lineColor.value
-        }
-      });
-      redoStack.value = [];
-      
-      canvas.requestRenderAll();
+          newFill: lineColor.value,
+        },
+      })
+      redoStack.value = []
+
+      canvas.requestRenderAll()
     }
-  });
-};
+  })
+}
 
 // 撤销
 const undo = () => {
-  if (!canUndo.value) return;
-  
-  const lastAction = undoStack.value.pop();
-  if (!lastAction) return;
+  if (!canUndo.value) return
+
+  const lastAction = undoStack.value.pop()
+  if (!lastAction) return
 
   if (lastAction.type === 'draw') {
-    const objects = canvas.getObjects();
-    const lastObject = objects[objects.length - 1];
+    const objects = canvas.getObjects()
+    const lastObject = objects[objects.length - 1]
     if (lastObject) {
-      canvas.remove(lastObject);
+      canvas.remove(lastObject)
       redoStack.value.push({
         type: 'draw',
-        object: lastObject
-      });
+        object: lastObject,
+      })
     }
   } else if (lastAction.type === 'fill' && lastAction.fillData) {
-    const { target, oldFill } = lastAction.fillData;
-    target.set('fill', oldFill);
-    redoStack.value.push(lastAction);
+    const { target, oldFill } = lastAction.fillData
+    target.set('fill', oldFill)
+    redoStack.value.push(lastAction)
   }
 
-  canvas.requestRenderAll();
-};
+  canvas.requestRenderAll()
+}
 
 // 重做
 const redo = () => {
-  if (!canRedo.value) return;
-  
-  const lastAction = redoStack.value.pop();
-  if (!lastAction) return;
+  if (!canRedo.value) return
+
+  const lastAction = redoStack.value.pop()
+  if (!lastAction) return
 
   if (lastAction.type === 'draw' && lastAction.object) {
     // 克隆对象以避免引用问题
-    const clonedObject = fabric.util.object.clone(lastAction.object);
-    canvas.add(clonedObject);
-    undoStack.value.push({
-      type: 'draw',
-      object: clonedObject
-    });
+    // const clonedObject = util.cloneObject(lastAction.object)
+    lastAction.object.clone((clonedObject: any) => {
+      canvas.add(clonedObject)
+      undoStack.value.push({
+        type: 'draw',
+        object: clonedObject,
+      })
+      canvas.requestRenderAll()
+    })
   } else if (lastAction.type === 'fill' && lastAction.fillData) {
-    const { target, newFill } = lastAction.fillData;
-    target.set('fill', newFill);
-    undoStack.value.push(lastAction);
+    const { target, newFill } = lastAction.fillData
+    target.set('fill', newFill)
+    undoStack.value.push(lastAction)
   }
 
-  canvas.requestRenderAll();
-};
+  canvas.requestRenderAll()
+}
 
 onMounted(() => {
   if (!canvasEl.value) return
@@ -213,21 +216,21 @@ onMounted(() => {
 
   // 修改 path:created 事件处理
   canvas.on('path:created', (e: any) => {
-    const path = e.path;
+    const path = e.path
     path.set({
       selectable: false,
       hoverCursor: 'pointer',
       evented: true,
       hasBorders: false,
-      hasControls: false
-    });
-    
+      hasControls: false,
+    })
+
     undoStack.value.push({
       type: 'draw',
-      object: path
-    });
-    redoStack.value = [];
-  });
+      object: path,
+    })
+    redoStack.value = []
+  })
 
   canvas.on('object:added', e => {
     e.target.selectable = false
