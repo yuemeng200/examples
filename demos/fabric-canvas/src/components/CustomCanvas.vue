@@ -47,13 +47,15 @@
 
 <script lang="ts" setup>
 import { ref, computed, onMounted } from 'vue'
-import { Canvas, PencilBrush, Path, Object as FabricObject, util } from 'fabric'
+import { Canvas, PencilBrush, Path, Object as FabricObject } from 'fabric'
+import { floodFill } from '../assets/utils/draw'
 
-type ToolType = 'draw' | 'eraser'
+type ToolType = 'draw' | 'eraser' | 'fill'
 
 const tools = [
   { type: 'draw' as ToolType, label: '画笔' },
   { type: 'eraser' as ToolType, label: '橡皮擦' },
+  { type: 'fill' as ToolType, label: '填充' },
 ]
 
 const canvasEl = ref<HTMLCanvasElement | null>(null)
@@ -64,8 +66,10 @@ let canvas: Canvas
 
 // 修改历史记录的数据结构
 interface DrawAction {
-  type: 'draw'
+  type: 'draw' | 'fill'
   object?: FabricObject
+  imageData?: ImageData
+  previousImageData?: ImageData
 }
 
 const undoStack = ref<DrawAction[]>([])
@@ -93,23 +97,40 @@ const setTool = (tool: ToolType) => {
         canvas.freeDrawingBrush.color = '#ffffff'
       }
       break
+    case 'fill':
+      canvas.isDrawingMode = false
+      break
   }
 }
 
 // 撤销
 const undo = () => {
-  if (!canUndo.value) return
+  if (!canUndo.value || !canvasEl.value) return
 
   const lastAction = undoStack.value.pop()
   if (!lastAction) return
 
-  const objects = canvas.getObjects()
-  const lastObject = objects[objects.length - 1]
-  if (lastObject) {
-    canvas.remove(lastObject)
+  if (lastAction.type === 'draw') {
+    const objects = canvas.getObjects()
+    const lastObject = objects[objects.length - 1]
+    if (lastObject) {
+      canvas.remove(lastObject)
+      redoStack.value.push({
+        type: 'draw',
+        object: lastObject,
+      })
+    }
+  } else if (lastAction.type === 'fill' && lastAction.previousImageData) {
+    const ctx = canvasEl.value.getContext('2d')
+    if (!ctx) return
+    
+    const currentImageData = ctx.getImageData(0, 0, canvasEl.value.width, canvasEl.value.height)
+    ctx.putImageData(lastAction.previousImageData, 0, 0)
+    
     redoStack.value.push({
-      type: 'draw',
-      object: lastObject,
+      type: 'fill',
+      imageData: currentImageData,
+      previousImageData: lastAction.previousImageData
     })
   }
 
@@ -118,16 +139,31 @@ const undo = () => {
 
 // 重做
 const redo = () => {
-  if (!canRedo.value) return
+  if (!canRedo.value || !canvasEl.value) return
 
   const lastAction = redoStack.value.pop()
-  if (!lastAction || !lastAction.object) return
+  if (!lastAction) return
 
-  canvas.add(lastAction.object)
-  undoStack.value.push({
-    type: 'draw',
-    object: lastAction.object,
-  })
+  if (lastAction.type === 'draw' && lastAction.object) {
+    canvas.add(lastAction.object)
+    undoStack.value.push({
+      type: 'draw',
+      object: lastAction.object,
+    })
+  } else if (lastAction.type === 'fill' && lastAction.imageData) {
+    const ctx = canvasEl.value.getContext('2d')
+    if (!ctx) return
+    
+    const currentImageData = ctx.getImageData(0, 0, canvasEl.value.width, canvasEl.value.height)
+    ctx.putImageData(lastAction.imageData, 0, 0)
+    
+    undoStack.value.push({
+      type: 'fill',
+      imageData: lastAction.imageData,
+      previousImageData: currentImageData
+    })
+  }
+  
   canvas.requestRenderAll()
 }
 
@@ -172,6 +208,34 @@ onMounted(() => {
 
   canvas.on('object:added', e => {
     e.target.selectable = false
+  })
+
+  // 添加填充工具的事件处理
+  canvas.on('mouse:down', (e: any) => {
+    console.log("🚀 ~ canvas.on ~ e:", e)
+    if (currentTool.value !== 'fill' || !canvasEl.value || !e.e) return
+    
+    const ctx = canvasEl.value.getContext('2d')
+    if (!ctx) return
+    
+    const previousImageData = ctx.getImageData(0, 0, canvasEl.value.width, canvasEl.value.height)
+    
+    const color = lineColor.value
+    const r = parseInt(color.slice(1, 3), 16)
+    const g = parseInt(color.slice(3, 5), 16)
+    const b = parseInt(color.slice(5, 7), 16)
+    
+    const newImageData = floodFill(canvasEl.value, e.e, { r, g, b, a: 255 })
+    if (!newImageData) return
+    
+    ctx.putImageData(newImageData, 0, 0)
+    
+    undoStack.value.push({
+      type: 'fill',
+      imageData: newImageData,
+      previousImageData
+    })
+    redoStack.value = []
   })
 })
 
