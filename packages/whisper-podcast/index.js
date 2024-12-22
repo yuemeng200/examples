@@ -4,7 +4,6 @@ const { spawn } = require('child_process')
 class WhisperTranscriber {
   constructor(options = {}) {
     this.modelSize = options.modelSize || 'tiny'
-    this.language = options.language || 'zh'
     this.outputDir = options.outputDir || 'output'
     this.device = 'cpu'
     this.pythonPath = options.pythonPath || path.join(__dirname, 'venv/bin/python3.10')
@@ -23,14 +22,12 @@ class WhisperTranscriber {
     const outputPath = path.join(this.outputDir, `${fileName}.txt`)
 
     try {
-      console.time('Transcription Time')
-      console.log('Starting transcription...')
+      console.time('Total Time')
 
       const process = spawn(this.pythonPath, [
         '-m', 'whisper',
         audioPath,
         '--model', this.modelSize,
-        '--language', this.language,
         '--device', this.device,
         '--output_dir', this.outputDir,
         '--output_format', 'txt',
@@ -38,10 +35,6 @@ class WhisperTranscriber {
         '--best_of', '1',
         '--temperature', '0'
       ])
-
-      process.stdout.on('data', (data) => {
-        console.log(data.toString())
-      })
 
       process.stderr.on('data', (data) => {
         console.warn(data.toString())
@@ -59,14 +52,19 @@ class WhisperTranscriber {
 
       const text = fs.readFileSync(outputPath, 'utf8')
       
-      console.timeEnd('Transcription Time')
+      console.timeEnd('Total Time')
       console.log('Transcription completed')
+      console.log('Audio file:', path.basename(audioPath))
+      console.log('Model size:', this.modelSize)
+      console.log('Device:', this.device)
+      console.log('Output file:', outputPath)
 
       return {
         text,
         outputPath
       }
     } catch (error) {
+      console.timeEnd('Total Time')
       console.error('Transcription failed:', error)
       throw error
     }
@@ -83,8 +81,7 @@ async function main() {
     })
 
     console.log('Using device:', transcriber.device)
-    const result = await transcriber.transcribe(path.join(__dirname, 'web-components.wav'))
-    console.log('Transcription result:', result.text)
+    await transcriber.transcribe(path.join(__dirname, 'temp/Syntax_-_854.mp3'))
   } catch (error) {
     console.error('Error:', error)
     console.log('Please make sure the virtual environment is properly set up')
